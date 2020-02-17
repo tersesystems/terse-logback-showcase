@@ -1,0 +1,75 @@
+<!--
+
+    SPDX-License-Identifier: CC0-1.0
+
+    Copyright 2018-2019 Will Sargent.
+
+    Licensed under the CC0 Public Domain Dedication;
+    You may obtain a copy of the License at
+
+        http://creativecommons.org/publicdomain/zero/1.0/
+
+-->
+<included>
+
+    <appender name="ASYNC_JSONFILE" class="net.logstash.logback.appender.LoggingEventAsyncDisruptorAppender">
+        <filter class="com.tersesystems.logback.core.EnabledFilter">
+            <enabled>${jsonfile.enabled}</enabled>
+        </filter>
+        <appender class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${jsonfile.location}</file>
+            <append>${jsonfile.append}</append>
+
+            <!--
+              This quadruples logging throughput (in theory) https://logback.qos.ch/manual/appenders.html#FileAppender
+             -->
+            <immediateFlush>${jsonfile.immediateFlush}</immediateFlush>
+
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <fileNamePattern>${jsonfile.rollingPolicy.fileNamePattern}</fileNamePattern>
+                <maxHistory>${jsonfile.rollingPolicy.maxHistory}</maxHistory>
+            </rollingPolicy>
+
+            <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+                <providers>
+                    <pattern>
+                        <pattern>
+                            { "id": "%uniqueId" }
+                            { "start_ms": "#asLong{%startTime}" }
+                        </pattern>
+                    </pattern>
+                    <sequence/>
+                    <timestamp>
+                        <!-- UTC is the best server consistent timezone -->
+                        <timeZone>${jsonfile.encoder.timeZone}</timeZone>
+                        <pattern>${jsonfile.encoder.timestampPattern}</pattern>
+                    </timestamp>
+                    <version/>
+                    <message/>
+                    <loggerName/>
+                    <threadName/>
+                    <logLevel/>
+                    <logLevelValue/><!-- numeric value is useful for filtering >= -->
+                    <stackHash/>
+                    <mdc/>
+                    <logstashMarkers/>
+                    <arguments/>
+                    <provider class="com.tersesystems.logback.exceptionmapping.json.ExceptionArgumentsProvider">
+                        <fieldName>exception</fieldName>
+                    </provider>
+
+                    <stackTrace>
+                        <!--
+                          https://github.com/logstash/logstash-logback-encoder#customizing-stack-traces
+                        -->
+                        <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                            <rootCauseFirst>${jsonfile.shortenedThrowableConverter.rootCauseFirst}</rootCauseFirst>
+                            <inlineHash>${jsonfile.shortenedThrowableConverter.inlineHash}</inlineHash>
+                        </throwableConverter>
+                    </stackTrace>
+                </providers>
+            </encoder>
+        </appender>
+    </appender>
+
+</included>
