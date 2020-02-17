@@ -5,32 +5,7 @@
     <include resource="terse-logback/appenders/console-appenders.xml"/>
     <include resource="terse-logback/appenders/jsonfile-appenders.xml"/>
     <include resource="terse-logback/appenders/textfile-appenders.xml"/>
-
-    <appender name="ASYNC_JDBC" class="net.logstash.logback.appender.LoggingEventAsyncDisruptorAppender">
-        <!-- Don't allow logging events from the appender or the underpinnings to be logged -->
-        <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
-            <evaluator>
-                <expression>${jdbc.filter}</expression>
-            </evaluator>
-            <OnMismatch>NEUTRAL</OnMismatch>
-            <OnMatch>DENY</OnMatch>
-        </filter>
-
-        <appender class="com.tersesystems.logback.jdbc.JDBCAppender">
-            <driver>${jdbc.driver}</driver>
-            <url>${jdbc.url}</url>
-            <username>${jdbc.username}</username>
-            <password>${jdbc.password}</password>
-
-            <createStatements>${jdbc.createStatements}</createStatements>
-            <insertStatement>${jdbc.insertStatement}</insertStatement>
-            <reaperStatement>${jdbc.reaperStatement}</reaperStatement>
-            <reaperSchedule>${jdbc.reaperSchedule}</reaperSchedule>
-
-            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            </encoder>
-        </appender>
-    </appender>
+    <include resource="terse-logback/appenders/jdbc-appenders.xml"/>
 
     <turboFilter class="com.tersesystems.logback.classic.TapFilter">
         <appender-ref ref="ASYNC_JDBC"/>

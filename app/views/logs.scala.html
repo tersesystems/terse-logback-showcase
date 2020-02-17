@@ -1,0 +1,29 @@
+@(list: Seq[_root_.logging.LogEntry], nextPage: Int)
+
+@main("Logs") {
+<h1>Logs</h1>
+
+<p>
+  <a href="@controllers.routes.HomeController.logs(nextPage)">Page @nextPage</a>
+</p>
+
+<table>
+  <thead>
+    <th>Timestamp</th>
+    <th>Level</th>
+    <th>Value</th>
+    <th>Event</th>
+  </thead>
+
+  <tbody>
+  @for(e <- list) {
+  <tr>
+    <td>@e.timestamp</td>
+    <td>@e.level</td>
+    <td>@e.levelValue</td>
+    <td>@e.event</td>
+  </tr>
+  }
+  </tbody>
+</table>
+}

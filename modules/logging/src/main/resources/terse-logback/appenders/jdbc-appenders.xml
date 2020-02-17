@@ -1,0 +1,65 @@
+<included>
+
+    <appender name="ASYNC_JDBC" class="net.logstash.logback.appender.LoggingEventAsyncDisruptorAppender">
+        <!-- Don't allow logging events from the appender or the underpinnings to be logged -->
+        <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+            <evaluator>
+                <expression>${jdbc.filter}</expression>
+            </evaluator>
+            <OnMismatch>NEUTRAL</OnMismatch>
+            <OnMatch>DENY</OnMatch>
+        </filter>
+
+        <appender class="com.tersesystems.logback.correlationid.CorrelationIdJDBCAppender">
+            <driver>${jdbc.driver}</driver>
+            <url>${jdbc.url}</url>
+            <username>${jdbc.username}</username>
+            <password>${jdbc.password}</password>
+
+            <createStatements>${jdbc.createStatements}</createStatements>
+            <insertStatement>${jdbc.insertStatement}</insertStatement>
+            <reaperStatement>${jdbc.reaperStatement}</reaperStatement>
+            <reaperSchedule>${jdbc.reaperSchedule}</reaperSchedule>
+
+            <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+                <providers>
+                    <pattern>
+                        <pattern>
+                            { "start_ms": "#asLong{%startTime}" }
+                        </pattern>
+                    </pattern>
+                    <sequence/>
+                    <timestamp>
+                        <!-- UTC is the best server consistent timezone -->
+                        <timeZone>${jsonfile.encoder.timeZone}</timeZone>
+                        <pattern>${jsonfile.encoder.timestampPattern}</pattern>
+                    </timestamp>
+                    <version/>
+                    <message/>
+                    <loggerName/>
+                    <threadName/>
+                    <logLevel/>
+                    <logLevelValue/><!-- numeric value is useful for filtering >= -->
+                    <stackHash/>
+                    <mdc/>
+                    <logstashMarkers/>
+                    <arguments/>
+                    <provider class="com.tersesystems.logback.exceptionmapping.json.ExceptionArgumentsProvider">
+                        <fieldName>exception</fieldName>
+                    </provider>
+
+                    <stackTrace>
+                        <!--
+                          https://github.com/logstash/logstash-logback-encoder#customizing-stack-traces
+                        -->
+                        <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                            <rootCauseFirst>${jsonfile.shortenedThrowableConverter.rootCauseFirst}</rootCauseFirst>
+                            <inlineHash>${jsonfile.shortenedThrowableConverter.inlineHash}</inlineHash>
+                        </throwableConverter>
+                    </stackTrace>
+                </providers>
+            </encoder>
+        </appender>
+    </appender>
+
+</included>
