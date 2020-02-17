@@ -1,0 +1,35 @@
+{
+    "name": "terse-logback-showcase",
+    "description": "Showcase project to show logging and error reporting for Terse Logback",
+    "keywords": [
+      "Play",
+      "terse-logback",
+      "logback",
+      "logging",
+      "tracing",
+      "observability",
+      "sentry",
+      "honeycomb"
+    ],
+    "website": "https://github.com/tersesystems/terse-logback-showcase",
+    "repository": "https://github.com/tersesystems/terse-logback-showcase",
+    "success_url": "/",
+    "env": {
+      "BUILDPACK_URL": "https://github.com/heroku/heroku-buildpack-scala.git",
+      "PLAY_CONF_FILE": "application.prod.conf",
+      "PLAY_APP_SECRET": "https://www.playframework.com/documentation/2.8.x/ApplicationSecret#Generating-an-application-secret",
+      "HONEYCOMB_API_KEY": {
+        "description": "The Honeycomb API key",
+        "required": false
+      },
+      "HONEYCOMB_DATASET": {
+        "description": "The Honeycomb Dataset",
+        "required": false
+      },
+      "SENTRY_DSN": {
+        "description": "The Sentry DSN",
+        "required": false
+      }      
+    }
+  }
+  

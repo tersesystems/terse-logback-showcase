@@ -1,5 +1,23 @@
 @()
 
-@main("Welcome to Play") {
-  <h1>Welcome to Play!</h1>
+@main("Terse Logback Showcase") {
+  <h4><a href="@routes.HomeController.index">Home</a> | <a href="@routes.LogController.list(1)">Logs</a></h4>
+
+  <p>
+    This is a demonstration of how easy it is to present logs in multiple formats depending on environment,
+    query for information from an in-memory database, and use ringbuffers to display diagnostic logs on exception.
+  </p>
+
+  <p>
+    Click on <a href="@controllers.routes.HomeController.normal">this link</a> to render a page normally.  [<a href="https://github.com/tersesystems/terse-logback-showcase/blob/master/app/controllers/HomeController.java#L22">Source code</a>]
+  </p>
+
+  <p>
+    Click on <a href="@controllers.routes.HomeController.flaky">this flaky link</a> to cause errors. [<a href="https://github.com/tersesystems/terse-logback-showcase/blob/master/app/controllers/HomeController.java#L33">Source code</a>]
+  </p>
+
+  <p>
+    The source code for this application is available on <a href="https://github.com/tersesystems/terse-logback-showcase">Github</a>, and uses <a href="https://playframework.com">Play</a> and <a href="https://github.com/tersesystems/terse-logback">Terse Logback</a>.
+  </p>
+
 }
