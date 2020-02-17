@@ -1,0 +1,41 @@
+@(list: Seq[_root_.logging.LogEntry], nextPage: Int)
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>        
+        <title>Logs</title>
+        <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/logs.css")">
+        <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")">
+    </head>
+    <body>
+      <h1>Logs</h1>
+        <p style="text-align: right; padding-right: 50px;">
+          <a href="@controllers.routes.HomeController.logs(nextPage)">Page @nextPage</a>
+        </p>
+        
+        @* from https://codepen.io/adam-lynch/pen/GaqgXP/ *@
+        <table>
+          <thead>
+            <tr>
+              <th data-type="text-short">Timestamp  <span class="resize-handle"></span></th>
+              <th data-type="text-short">Level <span class="resize-handle"></span></th>
+              <th data-type="text-short">Logger <span class="resize-handle"></span></th>
+              <th data-type="text-message">Message <span class="resize-handle"></span></th>
+            </tr>    
+          </thead>
+        
+          <tbody>
+          @for(e <- list) {
+          <tr>
+            <td>@e.timestamp</td>
+            <td>@e.level</td>
+            <td>@e.loggerName</td>
+            <td>@e.message</td>
+          </tr>
+          }
+          </tbody>
+        </table>
+              
+        <script src="@routes.Assets.versioned("javascripts/logs.js")" type="text/javascript"></script>
+    </body>
+</html>

@@ -2,7 +2,7 @@
 
     SPDX-License-Identifier: CC0-1.0
 
-    Copyright 2018-2019 Will Sargent.
+    Copyright 2018-2020 Will Sargent.
 
     Licensed under the CC0 Public Domain Dedication;
     You may obtain a copy of the License at
@@ -17,9 +17,12 @@
             <enabled>${console.enabled}</enabled>
         </filter>
 
-        <encoder>
-            <pattern>${console.encoder.pattern}</pattern>
-        </encoder>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${console.threshold}</level>
+        </filter>
+
+        <include resource="terse-logback/encoders/short-encoder.xml"/>
+
         <withJansi>${console.withJansi}</withJansi>
     </appender>
 

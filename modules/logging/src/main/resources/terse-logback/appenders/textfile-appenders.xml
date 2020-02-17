@@ -2,7 +2,7 @@
 
     SPDX-License-Identifier: CC0-1.0
 
-    Copyright 2018-2019 Will Sargent.
+    Copyright 2018-2020 Will Sargent.
 
     Licensed under the CC0 Public Domain Dedication;
     You may obtain a copy of the License at
@@ -15,8 +15,12 @@
         <filter class="com.tersesystems.logback.core.EnabledFilter">
             <enabled>${textfile.enabled}</enabled>
         </filter>
-        <appender class="ch.qos.logback.core.FileAppender">
 
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${textfile.threshold}</level>
+        </filter>
+
+        <appender class="ch.qos.logback.core.FileAppender">
             <file>${textfile.location}</file>
             <append>${textfile.append}</append>
 
@@ -25,10 +29,7 @@
              -->
             <immediateFlush>${textfile.immediateFlush}</immediateFlush>
 
-            <encoder>
-                <pattern>${textfile.encoder.pattern}</pattern>
-                <outputPatternAsHeader>${textfile.encoder.outputPatternAsHeader}</outputPatternAsHeader>
-            </encoder>
+            <include resource="terse-logback/encoders/detailed-encoder.xml"/>
         </appender>
     </appender>
 </included>

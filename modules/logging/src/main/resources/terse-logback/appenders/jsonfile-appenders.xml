@@ -2,7 +2,7 @@
 
     SPDX-License-Identifier: CC0-1.0
 
-    Copyright 2018-2019 Will Sargent.
+    Copyright 2018-2020 Will Sargent.
 
     Licensed under the CC0 Public Domain Dedication;
     You may obtain a copy of the License at
@@ -16,6 +16,11 @@
         <filter class="com.tersesystems.logback.core.EnabledFilter">
             <enabled>${jsonfile.enabled}</enabled>
         </filter>
+
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${jsonfile.threshold}</level>
+        </filter>
+
         <appender class="ch.qos.logback.core.rolling.RollingFileAppender">
             <file>${jsonfile.location}</file>
             <append>${jsonfile.append}</append>
@@ -30,45 +35,7 @@
                 <maxHistory>${jsonfile.rollingPolicy.maxHistory}</maxHistory>
             </rollingPolicy>
 
-            <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
-                <providers>
-                    <pattern>
-                        <pattern>
-                            { "id": "%uniqueId" }
-                            { "start_ms": "#asLong{%startTime}" }
-                        </pattern>
-                    </pattern>
-                    <sequence/>
-                    <timestamp>
-                        <!-- UTC is the best server consistent timezone -->
-                        <timeZone>${jsonfile.encoder.timeZone}</timeZone>
-                        <pattern>${jsonfile.encoder.timestampPattern}</pattern>
-                    </timestamp>
-                    <version/>
-                    <message/>
-                    <loggerName/>
-                    <threadName/>
-                    <logLevel/>
-                    <logLevelValue/><!-- numeric value is useful for filtering >= -->
-                    <stackHash/>
-                    <mdc/>
-                    <logstashMarkers/>
-                    <arguments/>
-                    <provider class="com.tersesystems.logback.exceptionmapping.json.ExceptionArgumentsProvider">
-                        <fieldName>exception</fieldName>
-                    </provider>
-
-                    <stackTrace>
-                        <!--
-                          https://github.com/logstash/logstash-logback-encoder#customizing-stack-traces
-                        -->
-                        <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
-                            <rootCauseFirst>${jsonfile.shortenedThrowableConverter.rootCauseFirst}</rootCauseFirst>
-                            <inlineHash>${jsonfile.shortenedThrowableConverter.inlineHash}</inlineHash>
-                        </throwableConverter>
-                    </stackTrace>
-                </providers>
-            </encoder>
+            <include resource="terse-logback/encoders/json-encoder.xml"/>
         </appender>
     </appender>
 

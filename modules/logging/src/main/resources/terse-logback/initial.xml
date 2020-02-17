@@ -2,7 +2,7 @@
 
     SPDX-License-Identifier: CC0-1.0
 
-    Copyright 2018-2019 Will Sargent.
+    Copyright 2018-2020 Will Sargent.
 
     Licensed under the CC0 Public Domain Dedication;
     You may obtain a copy of the License at
@@ -12,14 +12,29 @@
 -->
 <included>
 
+    <!-- loosen rul to include for encoders as well as just top level -->
+    <newRule pattern="*/include"
+             actionClass="ch.qos.logback.core.joran.action.IncludeAction"/>
+
+    <!-- loosen the rule on appender refs so appenders can reference them -->
+    <newRule pattern="*/appender/appender-ref"
+             actionClass="ch.qos.logback.core.joran.action.AppenderRefAction"/>
+
+    <!-- loosen the rule on appender refs so turbo filters can reference them -->
+    <newRule pattern="configuration/turboFilter/appender-ref"
+             actionClass="ch.qos.logback.core.joran.action.AppenderRefAction"/>
+    
     <newRule pattern="*/typesafeConfig"
              actionClass="com.tersesystems.logback.typesafeconfig.TypesafeConfigAction"/>
 
     <newRule pattern="*/budgetRule"
              actionClass="com.tersesystems.logback.budget.BudgetRuleAction"/>
 
-    <newRule pattern="configuration/turboFilter/appender-ref"
-             actionClass="ch.qos.logback.core.joran.action.AppenderRefAction"/>
+    <newRule pattern="*/ringBuffer"
+             actionClass="com.tersesystems.logback.ringbuffer.RingBufferAction"/>
+
+    <newRule pattern="*/ringBuffer-ref"
+             actionClass="com.tersesystems.logback.ringbuffer.RingBufferRefAction"/>
 
     <typesafeConfig>
         <object name="highlightMap" path="highlight" scope="context"/>

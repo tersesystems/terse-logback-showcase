@@ -2,4 +2,12 @@
 
 @main("Welcome to Play") {
   <h1>Welcome to Play!</h1>
+
+  <p>
+    Click on <a href="@controllers.routes.HomeController.logs(1)">this link</a> to see logs.
+  </p>
+
+  <p>
+    Click on <a href="@controllers.routes.HomeController.flaky">this flaky link</a> to cause errors.
+  </p>
 }

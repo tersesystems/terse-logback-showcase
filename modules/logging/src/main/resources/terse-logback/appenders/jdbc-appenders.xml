@@ -1,0 +1,96 @@
+<included>
+
+    <!-- ringbuffer is in memory, so don't put too much in -->
+    <ringBuffer name="JDBC_RINGBUFFER" class="com.tersesystems.logback.ringbuffer.ArrayBasedRingBuffer">
+        <capacity>${jdbc.ringBuffer.capacity}</capacity>
+    </ringBuffer>
+
+    <appender name="ASYNC_JDBC" class="net.logstash.logback.appender.LoggingEventAsyncDisruptorAppender">
+        <!-- Don't allow logging events from the appender or the underpinnings to be logged -->
+        <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+            <evaluator>
+                <expression>${jdbc.filter}</expression>
+            </evaluator>
+            <OnMismatch>NEUTRAL</OnMismatch>
+            <OnMatch>DENY</OnMatch>
+        </filter>
+
+        <!--
+          A JDBC appender that adds the correlation id as a field.
+        -->
+        <appender class="com.tersesystems.logback.correlationid.CorrelationIdJDBCAppender">
+            <driver>${jdbc.driver}</driver>
+            <url>${jdbc.url}</url>
+            <username>${jdbc.username}</username>
+            <password>${jdbc.password}</password>
+
+            <include resource="terse-logback/encoders/json-encoder.xml"/>
+
+            <createStatements>${jdbc.createStatements}</createStatements>
+            <insertStatement>${jdbc.insertStatement}</insertStatement>
+            <reaperStatement>${jdbc.reaperStatement}</reaperStatement>
+            <reaperSchedule>${jdbc.reaperSchedule}</reaperSchedule>
+        </appender>
+    </appender>
+
+    <!--
+      A ring buffer aware appender may send events to a ring buffer or through to another appender.
+    -->
+    <appender name="ASYNC_JDBC_WITH_RINGBUFFER" class="com.tersesystems.logback.ringbuffer.RingBufferAwareAppender">
+        <!-- log to jdbc if INFO or above, otherwise log to ring buffer -->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${jdbc.threshold}</level>
+        </filter>
+
+        <include resource="terse-logback/encoders/json-encoder.xml"/>
+
+        <!-- anything denied goes to the ring buffer -->
+        <ringBuffer-ref ref="JDBC_RINGBUFFER"/>
+
+        <!-- anything accepted goes to the appender, which has a wrapper for dealing with dumps -->
+        <appender-ref ref="ASYNC_JDBC"/>
+    </appender>
+
+    <!--
+      This logger is the handle for dumping the ring buffer.
+    -->
+    <logger name="JDBC_RINGBUFFER_LOGGER" level="TRACE" additivity="false">
+        <!-- This appender dumps contents of the ring buffer when an event is received. -->
+        <appender class="com.tersesystems.logback.ringbuffer.DumpRingBufferAppender">
+            <!-- empty out the ring buffer on dump -->
+            <poll>true</poll>
+
+            <!-- Event source, produces BufferedLoggingEvent -->
+            <ringBuffer-ref ref="JDBC_RINGBUFFER"/>
+
+            <!-- Event sink, must use BufferedEventEncoder and have enough capacity to process a dump -->
+            <appender class="net.logstash.logback.appender.LoggingEventAsyncDisruptorAppender">
+                <appender class="com.tersesystems.logback.correlationid.CorrelationIdJDBCAppender">
+                    <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+                        <evaluator>
+                            <expression>${jdbc.filter}</expression>
+                        </evaluator>
+                        <OnMismatch>NEUTRAL</OnMismatch>
+                        <OnMatch>DENY</OnMatch>
+                    </filter>
+
+                    <driver>${jdbc.driver}</driver>
+                    <url>${jdbc.url}</url>
+                    <username>${jdbc.username}</username>
+                    <password>${jdbc.password}</password>
+
+                    <!-- preprocessed events have already been formatted as JSON, no need for extra escaping. -->
+                    <encoder>
+                        <pattern>%message</pattern>
+                    </encoder>
+
+                    <createStatements>${jdbc.createStatements}</createStatements>
+                    <insertStatement>${jdbc.insertStatement}</insertStatement>
+                    <reaperStatement>${jdbc.reaperStatement}</reaperStatement>
+                    <reaperSchedule>${jdbc.reaperSchedule}</reaperSchedule>
+                </appender>
+            </appender>
+        </appender>
+    </logger>
+
+</included>
