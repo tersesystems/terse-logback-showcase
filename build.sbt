@@ -16,6 +16,7 @@ lazy val logging = (project in file("modules/logging")).settings(
   libraryDependencies += "org.fusesource.jansi" % "jansi" % "1.17.1",
 
   libraryDependencies += "io.sentry" % "sentry-logback" % "1.7.30",
+  libraryDependencies += "io.honeycomb.beeline" % "beeline-core" % "1.0.9",
 
   libraryDependencies += "com.tersesystems.logback" % "logback-budget" % terseLogback,
   libraryDependencies += "com.tersesystems.logback" % "logback-censor" % terseLogback,

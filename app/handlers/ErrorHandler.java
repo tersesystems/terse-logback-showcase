@@ -2,6 +2,13 @@ package handlers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.typesafe.config.Config;
+import io.honeycomb.beeline.tracing.Beeline;
+import io.honeycomb.beeline.tracing.Span;
+import io.honeycomb.beeline.tracing.SpanBuilderFactory;
+import io.honeycomb.beeline.tracing.Tracer;
+import io.honeycomb.beeline.tracing.propagation.HttpHeaderV1PropagationCodec;
+import io.honeycomb.beeline.tracing.propagation.Propagation;
+import io.honeycomb.beeline.tracing.propagation.PropagationContext;
 import io.sentry.SentryClient;
 import io.sentry.context.Context;
 import io.sentry.event.Breadcrumb;
@@ -48,6 +55,7 @@ public class ErrorHandler extends play.http.DefaultHttpErrorHandler {
     private final SentryClient sentryClient;
     private final LogEntryFinder logEntryFinder;
     private final Futures futures;
+    private final Beeline beeline;
 
     @Inject
     public ErrorHandler(Config config,
@@ -55,8 +63,11 @@ public class ErrorHandler extends play.http.DefaultHttpErrorHandler {
                         OptionalSourceMapper sourceMapper,
                         Provider<Router> routes,
                         Futures futures,
-                        SentryClient sentryClient, LogEntryFinder logEntryFinder) {
+                        Beeline beeline,
+                        SentryClient sentryClient,
+                        LogEntryFinder logEntryFinder) {
         super(config, environment, sourceMapper, routes);
+        this.beeline = beeline;
         this.sentryClient = sentryClient;
         this.futures = futures;
         this.logEntryFinder = logEntryFinder;
@@ -91,6 +102,26 @@ public class ErrorHandler extends play.http.DefaultHttpErrorHandler {
                 ), Duration.ofSeconds(1));
     }
 
+    private void recordHoneycombEvent(List<LogEntry> rows, Http.RequestHeader request, UsefulException usefulException) {
+
+        SpanBuilderFactory.SpanBuilder builder = beeline.getSpanBuilderFactory().createBuilder()
+                .setSpanName("request")
+                .setServiceName("terse-logback-showcase");
+
+        Optional<String> headerValue = request.header(HttpHeaderV1PropagationCodec.HONEYCOMB_TRACE_HEADER);
+        if (headerValue.isPresent()) {
+            PropagationContext context = Propagation.honeycombHeaderV1().decode(headerValue.get());
+            builder.setParentContext(context);
+        }
+
+        Span span = builder.build();
+
+        Tracer tracer = beeline.getTracer();
+        tracer.startTrace(span);
+
+        span.addField("result", "OK");
+        tracer.endTrace();
+    }
 
     private void recordSentryEvent(List<LogEntry> rows, Http.RequestHeader request, UsefulException usefulException) {
         // Delay the query for a second so the async disruptor queue has a chance to clear.
