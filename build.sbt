@@ -8,6 +8,7 @@ val terseLogback = "0.14.0"
 
 lazy val logging = (project in file("modules/logging")).settings(
   resolvers += Resolver.bintrayRepo("tersesystems", "maven"),
+  resolvers += Resolver.mavenLocal,
 
   libraryDependencies += playCore,
   libraryDependencies += javaJdbc,

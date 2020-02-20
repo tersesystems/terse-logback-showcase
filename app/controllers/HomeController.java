@@ -8,10 +8,9 @@ import org.slf4j.MDC;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
-import scala.jdk.CollectionConverters;
+import scala.collection.JavaConverters;
 
 import javax.inject.Inject;
-import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
 /**
@@ -56,14 +55,14 @@ public class HomeController extends Controller {
         int mult = Math.max(page, 1) - 1;
         Integer offset = 50 * mult;
         return finder.list(offset).thenApply(list -> {
-            scala.collection.mutable.Seq<LogEntry> scalaList = CollectionConverters.ListHasAsScala(list).asScala();
+            scala.collection.mutable.Seq<LogEntry> scalaList = JavaConverters.asScalaBuffer(list);
             return ok(views.html.logs.render(scalaList.toSeq(), page + 1));
         });
     }
 
     public CompletionStage<Result> correlation(String correlationId, Integer page) {
         return finder.findByCorrelation(correlationId).thenApply(list -> {
-            scala.collection.mutable.Seq<LogEntry> scalaList = CollectionConverters.ListHasAsScala(list).asScala();
+            scala.collection.mutable.Seq<LogEntry> scalaList = JavaConverters.asScalaBuffer(list);
             return ok(views.html.logs.render(scalaList.toSeq(), page + 1));
         });
     }

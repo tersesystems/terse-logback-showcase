@@ -16,10 +16,6 @@ public class HoneycombClientProvider implements Provider<HoneycombClient> {
 
     @Inject
     public HoneycombClientProvider(Config config, ApplicationLifecycle lifecycle) {
-        String dataset = config.getString("beeline.dataset");
-        String writeKey = config.getString("beeline.writeKey");
-        Integer sampleRate = config.getInt("beeline.sampleRate");
-
         this.client = new HoneycombPlayWSClient();
         lifecycle.addStopHook(() -> CompletableFuture.runAsync(() -> {
             try {
