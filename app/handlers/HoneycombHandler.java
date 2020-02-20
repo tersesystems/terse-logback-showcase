@@ -26,6 +26,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -62,26 +63,27 @@ public class HoneycombHandler {
         SpanInfo spanInfo = createRootSpan(request);
         HoneycombRequest<ILoggingEvent> spanRequest = createSpanRequest(spanInfo, request, usefulException);
         honeycombClient.postEvent(writeKey, dataSet, spanRequest, this::spanEncodeFunction).thenAccept(response -> {
-            if (response != null) {
-                System.out.println(response.toString());
+            if (response != null && response.isSuccess()) {
+                // https://docs.honeycomb.io/working-with-your-data/tracing/send-trace-data/#span-events
+                Stream<HoneycombRequest<JsonNode>> requestsStream = createEventRequests(rows.stream(), spanInfo);
+                BatchingIterator.batchedStreamOf(requestsStream, 10).forEach(batch ->
+                        honeycombClient.postBatch(writeKey, dataSet, batch, this::nodeEncodeFunction)
+                );
+            } else {
+                logger.error("Bad honeycomb response {}", response != null ? response.toString() : null);
             }
-
-            // https://docs.honeycomb.io/working-with-your-data/tracing/send-trace-data/#span-events
-            Stream<HoneycombRequest<JsonNode>> requestsStream = createEventRequests(rows.stream(), spanInfo);
-            BatchingIterator.batchedStreamOf(requestsStream, 10).forEach(batch ->
-                honeycombClient.postBatch(writeKey, dataSet, batch, this::nodeEncodeFunction)
-            );
         });
-
     }
 
     private Stream<HoneycombRequest<JsonNode>> createEventRequests(Stream<LogEntry> rowStream, SpanInfo spanInfo) {
         return rowStream.map(row -> {
-            ObjectNode node = (ObjectNode) Json.parse(row.event());
+            String message = Json.parse(row.event()).get("message").textValue();
+            ObjectNode node = Json.newObject();
             node.put("meta.span_type", "span_event");
             node.put("trace.parent_id", spanInfo.spanId());
             node.put("trace.trace_id", spanInfo.traceId());
-            node.put("name", row.event());
+            node.put("Timestamp", isoTime(row.timestamp()));
+            node.put("name", message);
             return new HoneycombRequest<>(1, row.timestamp(), node);
         });
     }
@@ -117,6 +119,10 @@ public class HoneycombHandler {
         ILoggingEvent loggingEvent = loggingEventFactory.create(marker,
                 (ch.qos.logback.classic.Logger) logger, Level.ERROR, usefulException.title, null, usefulException);
         return new HoneycombRequest<>(1, spanInfo.startTime(), loggingEvent);
+    }
+
+    private String isoTime(Instant eventTime) {
+        return DateTimeFormatter.ISO_INSTANT.format(eventTime);
     }
 
     // https://stackoverflow.com/a/42531618/5266
