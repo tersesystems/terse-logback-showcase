@@ -2,7 +2,7 @@ import sbt.Keys.libraryDependencies
 
 organization in ThisBuild := "com.tersesystems.showcase"
 version in ThisBuild := "1.0-SNAPSHOT"
-scalaVersion in ThisBuild := "2.13.1"
+scalaVersion in ThisBuild := "2.12.10"
 
 val terseLogback = "0.14.0"
 
@@ -16,9 +16,9 @@ lazy val logging = (project in file("modules/logging")).settings(
   libraryDependencies += "org.fusesource.jansi" % "jansi" % "1.17.1",
 
   libraryDependencies += "io.sentry" % "sentry-logback" % "1.7.30",
-  libraryDependencies += "io.honeycomb.beeline" % "beeline-core" % "1.0.9",
 
   libraryDependencies += "com.tersesystems.logback" % "logback-budget" % terseLogback,
+  libraryDependencies += "com.tersesystems.logback" %% "logback-honeycomb-playws" % terseLogback,
   libraryDependencies += "com.tersesystems.logback" % "logback-censor" % terseLogback,
   libraryDependencies += "com.tersesystems.logback" % "logback-turbomarker" % terseLogback,
   libraryDependencies += "com.tersesystems.logback" % "logback-typesafe-config" % terseLogback,  

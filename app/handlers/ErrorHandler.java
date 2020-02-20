@@ -1,6 +1,14 @@
 package handlers;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.spi.ILoggingEvent;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.tersesystems.logback.classic.LoggingEventFactory;
+import com.tersesystems.logback.honeycomb.client.HoneycombClient;
+import com.tersesystems.logback.honeycomb.client.HoneycombRequest;
+import com.tersesystems.logback.tracing.EventMarkerFactory;
+import com.tersesystems.logback.tracing.SpanInfo;
+import com.tersesystems.logback.tracing.SpanMarkerFactory;
 import com.typesafe.config.Config;
 import io.honeycomb.beeline.tracing.Beeline;
 import io.honeycomb.beeline.tracing.Span;
@@ -10,7 +18,6 @@ import io.honeycomb.beeline.tracing.propagation.HttpHeaderV1PropagationCodec;
 import io.honeycomb.beeline.tracing.propagation.Propagation;
 import io.honeycomb.beeline.tracing.propagation.PropagationContext;
 import io.sentry.SentryClient;
-import io.sentry.context.Context;
 import io.sentry.event.Breadcrumb;
 import io.sentry.event.BreadcrumbBuilder;
 import io.sentry.event.Event;
@@ -18,17 +25,17 @@ import io.sentry.event.EventBuilder;
 import io.sentry.event.interfaces.ExceptionInterface;
 import logging.LogEntry;
 import logging.LogEntryFinder;
+import net.logstash.logback.encoder.LogstashEncoder;
+import net.logstash.logback.marker.LogstashMarker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.Environment;
 import play.api.OptionalSourceMapper;
 import play.api.UsefulException;
 import play.api.routing.Router;
-import play.i18n.Lang;
 import play.libs.Json;
 import play.libs.concurrent.Futures;
 import play.mvc.Http;
-import play.mvc.Result;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -39,9 +46,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.CompletionStage;
-import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -55,7 +61,9 @@ public class ErrorHandler extends play.http.DefaultHttpErrorHandler {
     private final SentryClient sentryClient;
     private final LogEntryFinder logEntryFinder;
     private final Futures futures;
-    private final Beeline beeline;
+    private final HoneycombClient honeycombClient;
+    private final SpanMarkerFactory spanMarkerFactory = new SpanMarkerFactory();
+    private final EventMarkerFactory eventMarkerFactory = new EventMarkerFactory();
 
     @Inject
     public ErrorHandler(Config config,
@@ -63,11 +71,11 @@ public class ErrorHandler extends play.http.DefaultHttpErrorHandler {
                         OptionalSourceMapper sourceMapper,
                         Provider<Router> routes,
                         Futures futures,
-                        Beeline beeline,
+                        HoneycombClient honeycombClient,
                         SentryClient sentryClient,
                         LogEntryFinder logEntryFinder) {
         super(config, environment, sourceMapper, routes);
-        this.beeline = beeline;
+        this.honeycombClient = honeycombClient;
         this.sentryClient = sentryClient;
         this.futures = futures;
         this.logEntryFinder = logEntryFinder;
@@ -103,24 +111,23 @@ public class ErrorHandler extends play.http.DefaultHttpErrorHandler {
     }
 
     private void recordHoneycombEvent(List<LogEntry> rows, Http.RequestHeader request, UsefulException usefulException) {
+        // TODO Create a root span using the span builder
+        // https://docs.honeycomb.io/working-with-your-data/tracing/send-trace-data/#span-events
+        LogstashEncoder encoder = new LogstashEncoder();
+        SpanInfo.Builder spanBuilder = SpanInfo.builder();
+        SpanInfo spanInfo = spanBuilder.build();
+        HoneycombRequest<ILoggingEvent> honeyRequest = createLoggingEvent(spanInfo, usefulException);
+        String dataSet = "";
+        String apiKey = "";
+        honeycombClient.postEvent(apiKey, dataSet, honeyRequest, e -> encoder.encode(e.getEvent()));
+    }
 
-        SpanBuilderFactory.SpanBuilder builder = beeline.getSpanBuilderFactory().createBuilder()
-                .setSpanName("request")
-                .setServiceName("terse-logback-showcase");
-
-        Optional<String> headerValue = request.header(HttpHeaderV1PropagationCodec.HONEYCOMB_TRACE_HEADER);
-        if (headerValue.isPresent()) {
-            PropagationContext context = Propagation.honeycombHeaderV1().decode(headerValue.get());
-            builder.setParentContext(context);
-        }
-
-        Span span = builder.build();
-
-        Tracer tracer = beeline.getTracer();
-        tracer.startTrace(span);
-
-        span.addField("result", "OK");
-        tracer.endTrace();
+    private HoneycombRequest<ILoggingEvent> createLoggingEvent(SpanInfo spanInfo, UsefulException usefulException) {
+        LoggingEventFactory loggingEventFactory = new LoggingEventFactory();
+        LogstashMarker marker = spanMarkerFactory.create(spanInfo);
+        ILoggingEvent loggingEvent = loggingEventFactory.create(marker,
+                (ch.qos.logback.classic.Logger) logger, Level.ERROR, usefulException.title, null, usefulException);
+        return new HoneycombRequest<>(1, Instant.now(), loggingEvent);
     }
 
     private void recordSentryEvent(List<LogEntry> rows, Http.RequestHeader request, UsefulException usefulException) {

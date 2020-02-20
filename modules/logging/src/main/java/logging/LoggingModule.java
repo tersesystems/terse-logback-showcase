@@ -1,8 +1,7 @@
 package logging;
 
+import com.tersesystems.logback.honeycomb.client.HoneycombClient;
 import com.typesafe.config.Config;
-import io.honeycomb.beeline.tracing.Beeline;
-import io.honeycomb.libhoney.HoneyClient;
 import io.sentry.SentryClient;
 import play.Environment;
 import play.inject.Binding;
@@ -15,8 +14,7 @@ public class LoggingModule extends play.inject.Module  {
     public List<Binding<?>> bindings(Environment environment, Config config) {
         return Arrays.asList(
             bindClass(SentryClient.class).toProvider(SentryClientProvider.class).eagerly(),
-            bindClass(HoneyClient.class).toProvider(HoneyClientProvider.class).eagerly(),
-            bindClass(Beeline.class).toProvider(BeelineProvider.class).eagerly()
+            bindClass(HoneycombClient.class).toProvider(HoneycombClientProvider.class).eagerly()
         );
     }
 }
