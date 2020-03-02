@@ -4,6 +4,8 @@ This is an example project to show how to integrate logging in an application us
 
 It is a [Play application](https://www.playframework.com/documentation/2.8.x/JavaHome) running on Java.
 
+[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
+
 ## Running
 
 You will need [sbt](https://www.scala-sbt.org/) installed to run.
