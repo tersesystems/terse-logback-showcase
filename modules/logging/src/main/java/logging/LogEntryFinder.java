@@ -120,9 +120,9 @@ public class LogEntryFinder {
         executionContext);
     }
 
-    private Optional<LogEntry> findById(Connection conn, String ts) throws SQLException {
+    private Optional<LogEntry> findById(Connection conn, String eventId) throws SQLException {
         try (PreparedStatement ps = conn.prepareStatement(byIdStatement())) {
-            ps.setString(1, ts.toString());
+            ps.setString(1, eventId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return Optional.of(makeEntry(rs));
@@ -158,7 +158,7 @@ public class LogEntryFinder {
         String message = json.path("message").asText("");
         String requestId = json.path("correlation_id").asText();
         String loggerName = json.path("logger_name").asText("");
-        String uniqueId = rs.getString("id");
+        String uniqueId = rs.getString("event_id");
         return new LogEntry(ts, levelValue, requestId, level, message, loggerName, evt, uniqueId);
     }
 

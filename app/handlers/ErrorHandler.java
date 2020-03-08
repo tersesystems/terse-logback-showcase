@@ -75,15 +75,14 @@ public class ErrorHandler extends play.http.DefaultHttpErrorHandler {
         SpanInfo rootSpan = utils.createRootSpan(request);
         handleBacktraces(rootSpan, request, usefulException);
 
-        // Log the error itself...
-        Marker marker = utils.createMarker(rootSpan, request, 500);
-
-        // Can manually create the correlation id or just set MDC again (this is outside the
-        // action so MDC is cleared)
         try {
             MDC.put("correlation_id", request.id().toString());
+
+            // Log the error itself...
+            Marker marker = utils.createMarker(rootSpan, request, 500);
+
             String msg = String.format("@%s - Internal server error, for (%s) [%s] ->\n", usefulException.id, request.method(), request.uri());
-            logger.error(msg, usefulException);
+            logger.error(marker, msg, usefulException);
         } finally {
             MDC.clear();
         }
