@@ -24,6 +24,7 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -47,6 +48,8 @@ public class ErrorHandler extends play.http.DefaultHttpErrorHandler {
     private final SentryHandler sentryHandler;
     private final HoneycombHandler honeycombHandler;
     private final Utils utils;
+    private final boolean sentryEnabled;
+    private final boolean honeycombEnabled;
 
     @Inject
     public ErrorHandler(Config config,
@@ -59,7 +62,8 @@ public class ErrorHandler extends play.http.DefaultHttpErrorHandler {
                         Utils utils,
                         LogEntryFinder logEntryFinder) {
         super(config, environment, sourceMapper, routes);
-
+        this.sentryEnabled = config.getBoolean("sentry.enabled");
+        this.honeycombEnabled = config.getBoolean("honeycomb.enabled");
         this.sentryHandler = sentryHandler;
         this.honeycombHandler = honeycombHandler;
         this.futures = futures;
@@ -108,16 +112,30 @@ public class ErrorHandler extends play.http.DefaultHttpErrorHandler {
         // Delay for a second so the queue can clear to the appender.
         futures.delayed(() ->
             logEntryFinder.findByCorrelation(cid).thenAcceptAsync(rows -> {
+                logger.info("Writing out rows for request id " + cid);
                 writeTracesToFile(cid, rows);
-                sentryHandler.handle(rows, request, usefulException);
-                honeycombHandler.handle(spanInfo, rows, request, usefulException);
+                if (isSentryEnabled()) {
+                    sentryHandler.handle(rows, request, usefulException);
+                }
+                if (isHoneycombEnabled()) {
+                    honeycombHandler.handle(spanInfo, rows, request, usefulException);
+                }
             }
         ), Duration.ofSeconds(1));
     }
 
+    private boolean isHoneycombEnabled() {
+        return this.honeycombEnabled;
+    }
+
+    private boolean isSentryEnabled() {
+        return this.sentryEnabled;
+    }
+
     private void writeTracesToFile(String correlationId, List<LogEntry> rows) {
         try {
-            Path logs = Files.createTempDirectory("logs");
+            Path cwd = FileSystems.getDefault().getPath("").toAbsolutePath();
+            Path logs = Files.createDirectories(cwd.resolve("logs"));
             Path path = logs.resolve("backtrace_" + correlationId + ".log");
             try (BufferedWriter writer = Files.newBufferedWriter(path, UTF_8)) {
                 for (LogEntry row : rows) {
@@ -128,7 +146,7 @@ public class ErrorHandler extends play.http.DefaultHttpErrorHandler {
                 logger.error("Cannot write file!", e);
             }
         } catch (IOException e) {
-            logger.error("Cannot create directories!", e);;
+            logger.error("Cannot create directories!", e);
         }
     }
 

@@ -1,0 +1,14 @@
+@import play.libs.Json
+
+@(e: _root_.logging.LogEntry)
+
+@main(e.uniqueId) {
+    <h1>@e.uniqueId</h1>
+
+    <p>
+    JSON:
+    <p>
+    <pre>
+    @{Json.prettyPrint(Json.parse(e.event))}
+    </pre>
+}

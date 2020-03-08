@@ -6,6 +6,8 @@
     </ringBuffer>
 
     <appender name="ASYNC_JDBC" class="net.logstash.logback.appender.LoggingEventAsyncDisruptorAppender">
+        <ringBufferSize>${jdbc.appenderRingBufferSize}</ringBufferSize>
+
         <!--
           A JDBC appender that adds the correlation id as a field.
         -->

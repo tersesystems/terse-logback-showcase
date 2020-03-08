@@ -3,10 +3,10 @@ GET     /                           controllers.HomeController.index()
 GET     /normal                     controllers.HomeController.normal()
 GET     /flaky                      controllers.HomeController.flaky()
 
-GET     /logs                       controllers.LogController.list(page: Int ?= 1)
-GET     /logs/:id                   controllers.LogController.show(id: String)
+GET     /log                       controllers.LogController.list(page: Int ?= 1)
+GET     /log/:id                   controllers.LogController.show(id: String)
 
-GET     /correlation/:cid           controllers.LogController.correlation(cid: String, page: Int ?= 1)
+GET     /log/correlation/:cid           controllers.LogController.correlation(cid: String, page: Int ?= 1)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

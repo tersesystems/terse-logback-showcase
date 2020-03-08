@@ -29,7 +29,7 @@ public class LogController extends Controller {
 
     public CompletionStage<Result> show(String id) {
         return finder.findById(id).thenApply(maybeEntry ->
-                maybeEntry.map(entry -> ok(views.html.log.render(entry)))
+                maybeEntry.map(entry -> ok(views.html.log.show.render(entry)))
                           .orElse(notFound()));
     } 
 
@@ -38,14 +38,14 @@ public class LogController extends Controller {
         Integer offset = 50 * mult;
         return finder.list(offset).thenApply(list -> {
             scala.collection.mutable.Seq<LogEntry> scalaList = JavaConverters.asScalaBuffer(list);
-            return ok(views.html.logs.render(scalaList.toSeq(), page + 1));
+            return ok(views.html.log.list.render(scalaList.toSeq(), page + 1));
         });
     }
 
     public CompletionStage<Result> correlation(String correlationId, Integer page) {
         return finder.findByCorrelation(correlationId).thenApply(list -> {
             scala.collection.mutable.Seq<LogEntry> scalaList = JavaConverters.asScalaBuffer(list);
-            return ok(views.html.logs.render(scalaList.toSeq(), page + 1));
+            return ok(views.html.log.list.render(scalaList.toSeq(), page + 1));
         });
     }
 }

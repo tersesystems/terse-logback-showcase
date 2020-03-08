@@ -1,0 +1,39 @@
+@import play.libs.Scala._
+
+@(list: Seq[_root_.logging.LogEntry], nextPage: Int)
+
+@main("Logs") {
+  <h1>Logs</h1>
+  <p style="text-align: right; padding-right: 50px;">
+    <a href="@controllers.routes.LogController.list(nextPage)">Page @nextPage &ndash;&gt;</a>
+  </p>
+
+  @* from https://codepen.io/adam-lynch/pen/GaqgXP/ *@
+  <table>
+    <thead>
+      <tr>
+        <th data-type="text-short">Timestamp  <span class="resize-handle"></span></th>
+        <th data-type="text-short">Level <span class="resize-handle"></span></th>
+        <th data-type="text-short">Logger <span class="resize-handle"></span></th>
+        <th data-type="text-short">Correlation ID <span class="resize-handle"></span></th>
+        <th data-type="text-message">Message <span class="resize-handle"></span></th>
+      </tr>
+    </thead>
+
+    <tbody>
+    @for(e <- list) {
+    <tr>
+      <td><a href="@routes.LogController.show(e.uniqueId)">@e.timestamp</a></td>
+      <td>@e.level</td>
+      <td>@e.loggerName</td>
+      <td>
+        @Option(e.requestId.orElse(null)).map { id =>
+          <a href="@routes.LogController.correlation(id)">@id</a>
+        }
+      </td>
+      <td>@e.message</td>
+    </tr>
+    }
+    </tbody>
+  </table>
+}

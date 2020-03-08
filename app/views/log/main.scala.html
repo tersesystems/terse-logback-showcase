@@ -1,0 +1,18 @@
+@(title: String)(content: Html)
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Logs</title>
+    <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/logs.css")">
+    <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")">
+</head>
+<body>
+<h4><a href="@routes.HomeController.index">Home</a> | <a href="@routes.LogController.list(1)">Logs</a></h4>
+
+@content
+
+<script src="@routes.Assets.versioned("javascripts/logs.js")" type="text/javascript"></script>
+    </body>
+</html>
+
