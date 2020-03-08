@@ -1,14 +1,17 @@
 @import play.libs.Json
 
-@(e: _root_.logging.LogEntry)
+@(e: _root_.logging.LogEntry, maybeHoneycomb: Option[String])
 
 @main(e.uniqueId) {
-    <h1>@e.uniqueId</h1>
+<h1>@e.uniqueId</h1>
 
-    <p>
-    JSON:
-    <p>
-    <pre>
-    @{Json.prettyPrint(Json.parse(e.event))}
-    </pre>
+@maybeHoneycomb.map{ link => Honeycomb Trace is @Html(link) }
+
+<p>
+JSON:
+<p>
+<pre>
+@{Json.prettyPrint(Json.parse(e.event))}
+</pre>
+
 }

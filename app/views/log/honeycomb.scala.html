@@ -1,0 +1,5 @@
+@(team: String, dataset: String, traceId: String, startTSE: Long, endTSE: Long)
+
+@defining(s"http://ui.honeycomb.io/${team}/datasets/${dataset}/trace?trace_id=${traceId}&trace_start_ts=${startTSE}&trace_end_ts=${endTSE}") { honeycombURL =>
+<a href="@honeycombURL">Honeycomb Link</a>
+}
