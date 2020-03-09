@@ -110,6 +110,8 @@ public class HoneycombHandler {
         node.set("correlation_id", Json.toJson(Long.toString(request.id())));
         node.set("trace.span_id", Json.toJson(spanInfo.spanId()));
         node.set("trace.parent_id", null);
+        node.set("response.status_code", Json.toJson(500));
+        node.set("exception", Json.toJson(usefulException.getMessage()));
         node.set("trace.trace_id", Json.toJson(spanInfo.traceId()));
         node.set("duration_ms", Json.toJson(spanDuration.toMillis()));
 
