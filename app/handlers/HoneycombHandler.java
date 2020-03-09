@@ -51,6 +51,63 @@ public class HoneycombHandler {
         });
     }
 
+    // Create a fake span that covers the entire duration of the request / response
+    private HoneycombRequest<JsonNode> createSpanRequest(SpanInfo spanInfo,
+                                                         Duration spanDuration,
+                                                         Http.RequestHeader request,
+                                                         UsefulException usefulException) {
+        // https://docs.honeycomb.io/working-with-your-data/tracing/send-trace-data/#manual-tracing
+        ObjectNode node = Json.newObject();
+
+        // Honeycomb required fields
+        node.put("service_name", spanInfo.serviceName());
+        node.set("trace.span_id", Json.toJson(spanInfo.spanId()));
+        node.set("trace.parent_id", null);
+        node.set("trace.trace_id", Json.toJson(spanInfo.traceId()));
+        node.set("name", Json.toJson(request.toString()));
+        node.set("duration_ms", Json.toJson(spanDuration.toMillis()));
+
+        // Extra fields for more context
+        node.set("correlation_id", Json.toJson(Long.toString(request.id())));
+        node.set("@timestamp", Json.toJson(spanInfo.startTime()));
+        node.set("request.method", Json.toJson(request.method()));
+        node.set("request.uri", Json.toJson(request.uri()));
+        node.set("response.status_code", Json.toJson(500));
+        node.set("exception", Json.toJson(usefulException.getMessage()));
+
+        return new HoneycombRequest<>(1, spanInfo.startTime(), node);
+    }
+
+    // Create a bunch of sub spans under the trace from the logs that will act as backtracing...
+    private Stream<HoneycombRequest<JsonNode>> createBacktraceStream(Stream<? extends LogEntry> rowStream, SpanInfo spanInfo) {
+        return rowStream.map(row -> {
+            JsonNode origNode = Json.parse(row.event());
+
+            ObjectNode node = Json.newObject();
+            for (Iterator<Map.Entry<String, JsonNode>> it = origNode.fields(); it.hasNext(); ) {
+                Map.Entry<String, JsonNode> entry = it.next();
+                node.put(entry.getKey(), entry.getValue().asText());
+            }
+
+            node.put("service_name", spanInfo.serviceName());
+            node.put("trace.parent_id", spanInfo.spanId());
+            node.put("trace.trace_id", spanInfo.traceId());
+            node.put("name", origNode.get("message").textValue());
+
+            // Span events aren't reliable right now, only use 1ms spans :-)
+            // https://docs.honeycomb.io/working-with-your-data/tracing/send-trace-data/#span-events
+            if (isUsingSpanEvents()) {
+                node.put("meta.span_type", "span_event");
+            } else {
+                node.put("trace.span_id", UUID.randomUUID().toString());
+                node.put("duration_ms", 1);
+            }
+
+            return new HoneycombRequest<>(1, row.timestamp(), node);
+        });
+    }
+
+    // Post the backtraces in batches of 10 per request.
     private void postBackTraces(List<? extends LogEntry> rows, SpanInfo spanInfo) {
         Stream<HoneycombRequest<JsonNode>> stream = createBacktraceStream(rows.stream(), spanInfo);
 
@@ -69,55 +126,6 @@ public class HoneycombHandler {
         });
     }
 
-    private Stream<HoneycombRequest<JsonNode>> createBacktraceStream(Stream<? extends LogEntry> rowStream, SpanInfo spanInfo) {
-        return rowStream.map(row -> {
-            JsonNode origNode = Json.parse(row.event());
-
-            // Span events must be entered directly on the root, I think.
-            ObjectNode node = Json.newObject();
-            for (Iterator<Map.Entry<String, JsonNode>> it = origNode.fields(); it.hasNext(); ) {
-                Map.Entry<String, JsonNode> entry = it.next();
-                node.put(entry.getKey(), entry.getValue().asText());
-            }
-
-            node.put("service_name", spanInfo.serviceName());
-            node.put("trace.parent_id", spanInfo.spanId());
-            node.put("trace.trace_id", spanInfo.traceId());
-            node.put("Timestamp", isoTime(row.timestamp()));
-            node.put("name", origNode.get("message").textValue());
-
-            // https://docs.honeycomb.io/working-with-your-data/tracing/send-trace-data/#span-events
-            if (isUsingSpanEvents()) {
-                node.put("meta.span_type", "span_event");
-            } else {
-                node.put("trace.span_id", UUID.randomUUID().toString());
-                node.put("duration_ms", 1);
-            }
-
-            return new HoneycombRequest<>(1, row.timestamp(), node);
-        });
-    }
-
-    private HoneycombRequest<JsonNode> createSpanRequest(SpanInfo spanInfo,
-                                                         Duration spanDuration,
-                                                         Http.RequestHeader request,
-                                                         UsefulException usefulException) {
-        // https://docs.honeycomb.io/working-with-your-data/tracing/send-trace-data/#manual-tracing
-        ObjectNode node = Json.newObject();
-
-        node.put("service_name", spanInfo.serviceName());
-        node.set("name", Json.toJson(request.toString()));
-        node.set("correlation_id", Json.toJson(Long.toString(request.id())));
-        node.set("trace.span_id", Json.toJson(spanInfo.spanId()));
-        node.set("trace.parent_id", null);
-        node.set("response.status_code", Json.toJson(500));
-        node.set("exception", Json.toJson(usefulException.getMessage()));
-        node.set("trace.trace_id", Json.toJson(spanInfo.traceId()));
-        node.set("duration_ms", Json.toJson(spanDuration.toMillis()));
-
-        return new HoneycombRequest<>(1, spanInfo.startTime(), node);
-    }
-
     private boolean isUsingSpanEvents() {
         // should use a feature flag here :-)
         return false;
@@ -126,6 +134,4 @@ public class HoneycombHandler {
     private String isoTime(Instant eventTime) {
         return DateTimeFormatter.ISO_INSTANT.format(eventTime);
     }
-
-
 }

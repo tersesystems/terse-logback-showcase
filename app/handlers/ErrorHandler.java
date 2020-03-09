@@ -67,9 +67,7 @@ public class ErrorHandler extends play.http.DefaultHttpErrorHandler {
             // Log the error itself...
             SpanInfo rootSpan = utils.createRootSpan(request);
             Marker marker = utils.createMarker(rootSpan, request, 500);
-
-            String msg = String.format("@%s - Internal server error, for (%s) [%s] ->\n", usefulException.id, request.method(), request.uri());
-            logger.error(marker, msg, usefulException);
+            logger.error(marker, "Internal server error for ({}}) [{}}]", request.method(), request.uri(), usefulException);
 
             // any call to this logger will empty out the ring buffer to JDBC, and from there
             // we can query traces and assemble them into something we can send to Sentry and Honeycomb.
