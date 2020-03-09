@@ -1,28 +1,14 @@
 package handlers;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.spi.ILoggingEvent;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.tersesystems.logback.classic.ILoggingEventFactory;
-import com.tersesystems.logback.classic.LoggingEventFactory;
 import com.tersesystems.logback.honeycomb.client.HoneycombClient;
 import com.tersesystems.logback.honeycomb.client.HoneycombRequest;
 import com.tersesystems.logback.honeycomb.client.HoneycombResponse;
 import com.tersesystems.logback.tracing.SpanInfo;
-import com.tersesystems.logback.tracing.SpanMarkerFactory;
-import com.tersesystems.logback.uniqueid.IdGenerator;
-import com.tersesystems.logback.uniqueid.RandomUUIDIdGenerator;
-import com.typesafe.config.Config;
-import logging.Attrs;
 import logging.LogEntry;
-import logging.RequestStartTime;
-import net.logstash.logback.encoder.LogstashEncoder;
-import net.logstash.logback.marker.LogstashMarker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.Marker;
 import play.api.UsefulException;
 import play.libs.Json;
 import play.mvc.Http;
@@ -32,45 +18,29 @@ import javax.inject.Singleton;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletionStage;
-import java.util.function.Function;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
-import static handlers.HoneycombHandler.BatchingIterator.*;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Spliterator.ORDERED;
+import static handlers.BatchingIterator.batchedStreamOf;
 
 @Singleton
 public class HoneycombHandler {
-
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final LoggingEventFactory loggingEventFactory = new LoggingEventFactory();
+    private final HoneycombClient<JsonNode> honeycombClient;
 
-    private final HoneycombClient honeycombClient;
-    private final LogstashEncoder encoder;
-
-    private final Function<HoneycombRequest<ILoggingEvent>, byte[]> spanEncodeFunction;
-    private final Function<HoneycombRequest<JsonNode>, byte[]> nodeEncodeFunction;
-    private final Utils utils;
-
+    @SuppressWarnings("unchecked")
     @Inject
-    public HoneycombHandler(Utils utils, HoneycombClient honeycombClient) {
-        this.utils = utils;
-        this.honeycombClient = honeycombClient;
-
-        this.encoder = new LogstashEncoder();
-        encoder.setContext((LoggerContext) LoggerFactory.getILoggerFactory());
-        encoder.start();
-
-        spanEncodeFunction = r -> encoder.encode(r.getEvent());
-        nodeEncodeFunction = r -> Json.stringify(r.getEvent()).getBytes(UTF_8);
+    public HoneycombHandler(HoneycombClient honeycombClient) {
+        this.honeycombClient = (HoneycombClient<JsonNode>) honeycombClient;
     }
 
-    void handle(SpanInfo spanInfo, List<? extends LogEntry> rows, Http.RequestHeader request, UsefulException usefulException) {
-        HoneycombRequest<ILoggingEvent> spanRequest = createSpanRequest(spanInfo, request, usefulException);
-        CompletionStage<HoneycombResponse> f = honeycombClient.post(spanRequest, spanEncodeFunction);
+    void handle(SpanInfo spanInfo, Duration spanDuration, List<? extends LogEntry> rows, Http.RequestHeader request, UsefulException usefulException) {
+        HoneycombRequest<JsonNode> spanRequest = createSpanRequest(spanInfo, spanDuration, request, usefulException);
+        CompletionStage<HoneycombResponse> f = honeycombClient.post(spanRequest);
         f.thenAccept(response -> {
             if (response != null && response.isSuccess()) {
                 logger.debug("handle: Successful post of event = " + response.toString());
@@ -82,17 +52,18 @@ public class HoneycombHandler {
     }
 
     private void postBackTraces(List<? extends LogEntry> rows, SpanInfo spanInfo) {
-        // https://docs.honeycomb.io/working-with-your-data/tracing/send-trace-data/#span-events
         Stream<HoneycombRequest<JsonNode>> stream = createBacktraceStream(rows.stream(), spanInfo);
 
         // Send batches to honeycomb 10 at a time
-        batchedStreamOf(stream, 10).forEach(batch -> {
-            CompletionStage<HoneycombResponse> f2 = honeycombClient.postBatch(batch, nodeEncodeFunction);
-            f2.thenAccept(response -> {
-                if (response != null && response.isSuccess()) {
-                    logger.debug("postBackTraces: Successful post of backtraces = " + response.toString());
-                } else {
-                    logger.error("postBackTraces: Bad honeycomb response {}", response != null ? response.toString() : null);
+        batchedStreamOf(stream, 10).forEach((List<HoneycombRequest<JsonNode>> batch) -> {
+            CompletionStage<List<HoneycombResponse>> f2 = honeycombClient.postBatch(batch);
+            f2.thenAccept(responses -> {
+                for (HoneycombResponse response : responses) {
+                    if (response.isSuccess()) {
+                        logger.debug("postBackTraces: Successful post of backtraces = " + response.toString());
+                    } else {
+                        logger.error("postBackTraces: Bad honeycomb response {}", response.toString());
+                    }
                 }
             });
         });
@@ -109,77 +80,50 @@ public class HoneycombHandler {
                 node.put(entry.getKey(), entry.getValue().asText());
             }
 
-            node.put("meta.span_type", "span_event");
+            node.put("service_name", spanInfo.serviceName());
             node.put("trace.parent_id", spanInfo.spanId());
             node.put("trace.trace_id", spanInfo.traceId());
             node.put("Timestamp", isoTime(row.timestamp()));
             node.put("name", origNode.get("message").textValue());
 
+            // https://docs.honeycomb.io/working-with-your-data/tracing/send-trace-data/#span-events
+            if (isUsingSpanEvents()) {
+                node.put("meta.span_type", "span_event");
+            } else {
+                node.put("trace.span_id", UUID.randomUUID().toString());
+                node.put("duration_ms", 1);
+            }
+
             return new HoneycombRequest<>(1, row.timestamp(), node);
         });
     }
 
-    private HoneycombRequest<ILoggingEvent> createSpanRequest(SpanInfo spanInfo, Http.RequestHeader request, UsefulException usefulException) {
-        Marker marker = utils.createMarker(spanInfo, request, 500);
-        ILoggingEvent loggingEvent = loggingEventFactory.create(marker,
-                (ch.qos.logback.classic.Logger) logger,
-                Level.ERROR,
-                usefulException.title,
-                null,
-                usefulException);
-        return new HoneycombRequest<>(1, spanInfo.startTime(), loggingEvent);
+    private HoneycombRequest<JsonNode> createSpanRequest(SpanInfo spanInfo,
+                                                         Duration spanDuration,
+                                                         Http.RequestHeader request,
+                                                         UsefulException usefulException) {
+        // https://docs.honeycomb.io/working-with-your-data/tracing/send-trace-data/#manual-tracing
+        ObjectNode node = Json.newObject();
+
+        node.put("service_name", spanInfo.serviceName());
+        node.set("name", Json.toJson(request.toString()));
+        node.set("correlation_id", Json.toJson(Long.toString(request.id())));
+        node.set("trace.span_id", Json.toJson(spanInfo.spanId()));
+        node.set("trace.parent_id", null);
+        node.set("trace.trace_id", Json.toJson(spanInfo.traceId()));
+        node.set("duration_ms", Json.toJson(spanDuration.toMillis()));
+
+        return new HoneycombRequest<>(1, spanInfo.startTime(), node);
+    }
+
+    private boolean isUsingSpanEvents() {
+        // should use a feature flag here :-)
+        return false;
     }
 
     private String isoTime(Instant eventTime) {
         return DateTimeFormatter.ISO_INSTANT.format(eventTime);
     }
 
-    // https://stackoverflow.com/a/42531618/5266
-    static class BatchingIterator<T> implements Iterator<List<T>> {
-        /**
-         * Given a stream, convert it to a stream of batches no greater than the
-         * batchSize.
-         *
-         * @param originalStream to convert
-         * @param batchSize      maximum size of a batch
-         * @param <T>            type of items in the stream
-         * @return a stream of batches taken sequentially from the original stream
-         */
-        public static <T> Stream<List<T>> batchedStreamOf(Stream<T> originalStream, int batchSize) {
-            return asStream(new BatchingIterator<>(originalStream.iterator(), batchSize));
-        }
 
-        private static <T> Stream<T> asStream(Iterator<T> iterator) {
-            return StreamSupport.stream(
-                    Spliterators.spliteratorUnknownSize(iterator, ORDERED),
-                    false);
-        }
-
-        private final int batchSize;
-        private List<T> currentBatch;
-        private final Iterator<T> sourceIterator;
-
-        public BatchingIterator(Iterator<T> sourceIterator, int batchSize) {
-            this.batchSize = batchSize;
-            this.sourceIterator = sourceIterator;
-        }
-
-        @Override
-        public boolean hasNext() {
-            prepareNextBatch();
-            return currentBatch != null && !currentBatch.isEmpty();
-        }
-
-        @Override
-        public List<T> next() {
-            return currentBatch;
-        }
-
-        private void prepareNextBatch() {
-            currentBatch = new ArrayList<>(batchSize);
-            while (sourceIterator.hasNext() && currentBatch.size() < batchSize) {
-                currentBatch.add(sourceIterator.next());
-            }
-        }
-    }
 }

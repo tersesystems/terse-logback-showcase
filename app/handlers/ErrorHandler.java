@@ -1,9 +1,7 @@
 package handlers;
 
-import com.tersesystems.logback.correlationid.CorrelationIdMarker;
 import com.tersesystems.logback.tracing.SpanInfo;
 import com.typesafe.config.Config;
-import logging.LogEntry;
 import logging.LogEntryFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,18 +20,9 @@ import scala.Option;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Error handler handles exceptions in a request which were not handled at a higher layer.
@@ -47,9 +36,8 @@ public class ErrorHandler extends play.http.DefaultHttpErrorHandler {
     private final Futures futures;
     private final SentryHandler sentryHandler;
     private final HoneycombHandler honeycombHandler;
+    private final FileHandler fileHandler;
     private final Utils utils;
-    private final boolean sentryEnabled;
-    private final boolean honeycombEnabled;
 
     @Inject
     public ErrorHandler(Config config,
@@ -59,13 +47,13 @@ public class ErrorHandler extends play.http.DefaultHttpErrorHandler {
                         Futures futures,
                         SentryHandler sentryHandler,
                         HoneycombHandler honeycombHandler,
+                        FileHandler fileHandler,
                         Utils utils,
                         LogEntryFinder logEntryFinder) {
         super(config, environment, sourceMapper, routes);
-        this.sentryEnabled = config.getBoolean("sentry.enabled");
-        this.honeycombEnabled = config.getBoolean("honeycomb.enabled");
         this.sentryHandler = sentryHandler;
         this.honeycombHandler = honeycombHandler;
+        this.fileHandler = fileHandler;
         this.futures = futures;
         this.utils = utils;
         this.logEntryFinder = logEntryFinder;
@@ -73,20 +61,20 @@ public class ErrorHandler extends play.http.DefaultHttpErrorHandler {
 
     @Override
     protected void logServerError(Http.RequestHeader request, UsefulException usefulException) {
-        // any call to this logger will empty out the ring buffer to JDBC, and from there
-        // we can query traces and assemble them into something we can send to Sentry and Honeycomb.
-        bufferControl.error("Dump the ringbuffer to JDBC here!");
-        SpanInfo rootSpan = utils.createRootSpan(request);
-        handleBacktraces(rootSpan, request, usefulException);
-
         try {
             MDC.put("correlation_id", request.id().toString());
 
             // Log the error itself...
+            SpanInfo rootSpan = utils.createRootSpan(request);
             Marker marker = utils.createMarker(rootSpan, request, 500);
 
             String msg = String.format("@%s - Internal server error, for (%s) [%s] ->\n", usefulException.id, request.method(), request.uri());
             logger.error(marker, msg, usefulException);
+
+            // any call to this logger will empty out the ring buffer to JDBC, and from there
+            // we can query traces and assemble them into something we can send to Sentry and Honeycomb.
+            bufferControl.error("Dump the ringbuffer to JDBC here!");
+            handleBacktraces(rootSpan, request, usefulException);
         } finally {
             MDC.clear();
         }
@@ -105,49 +93,24 @@ public class ErrorHandler extends play.http.DefaultHttpErrorHandler {
                         views.html.devError.render(Option.empty(), exception, request.asScala())));
     }
 
-
     private void handleBacktraces(SpanInfo spanInfo, Http.RequestHeader request, UsefulException usefulException) {
         String cid = Long.toString(request.id());
+        Duration spanDuration = spanInfo.duration(); // freeze this so it's not affected by delay
 
         // Delay for a second so the queue can clear to the appender.
         futures.delayed(() ->
             logEntryFinder.findByCorrelation(cid).thenAcceptAsync(rows -> {
-                logger.info("Writing out rows for request id " + cid);
-                writeTracesToFile(cid, rows);
-                if (isSentryEnabled()) {
+                if (utils.isSentryEnabled()) {
                     sentryHandler.handle(rows, request, usefulException);
                 }
-                if (isHoneycombEnabled()) {
-                    honeycombHandler.handle(spanInfo, rows, request, usefulException);
+                if (utils.isHoneycombEnabled()) {
+                    honeycombHandler.handle(spanInfo, spanDuration, rows, request, usefulException);
+                }
+                if (utils.isFilesEnabled()) {
+                    fileHandler.handle(cid, rows);
                 }
             }
         ), Duration.ofSeconds(1));
-    }
-
-    private boolean isHoneycombEnabled() {
-        return this.honeycombEnabled;
-    }
-
-    private boolean isSentryEnabled() {
-        return this.sentryEnabled;
-    }
-
-    private void writeTracesToFile(String correlationId, List<LogEntry> rows) {
-        try {
-            Path cwd = FileSystems.getDefault().getPath("").toAbsolutePath();
-            Path logs = Files.createDirectories(cwd.resolve("logs"));
-            Path path = logs.resolve("backtrace_" + correlationId + ".log");
-            try (BufferedWriter writer = Files.newBufferedWriter(path, UTF_8)) {
-                for (LogEntry row : rows) {
-                    writer.write(row.event());
-                    writer.newLine();
-                }
-            } catch (IOException e) {
-                logger.error("Cannot write file!", e);
-            }
-        } catch (IOException e) {
-            logger.error("Cannot create directories!", e);
-        }
     }
 
 }

@@ -3,6 +3,7 @@ package logging;
 import akka.actor.ActorSystem;
 import akka.stream.Materializer;
 import akka.stream.SystemMaterializer;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.tersesystems.logback.honeycomb.client.HoneycombClient;
 import com.tersesystems.logback.honeycomb.client.HoneycombRequest;
 import com.tersesystems.logback.honeycomb.playws.HoneycombPlayWSClient;
@@ -11,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.api.libs.ws.ahc.AhcWSClientConfig;
 import play.inject.ApplicationLifecycle;
+import play.libs.Json;
 import play.libs.ws.StandaloneWSClient;
 import play.libs.ws.ahc.AhcWSClientConfigFactory;
 import play.libs.ws.ahc.StandaloneAhcWSClient;
@@ -20,6 +22,8 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Singleton
 public class HoneycombClientProvider implements Provider<HoneycombClient> {
@@ -35,7 +39,7 @@ public class HoneycombClientProvider implements Provider<HoneycombClient> {
 
         String writeKey = config.getString("honeycomb.writeKey");
         String dataSet = config.getString("honeycomb.dataSet");
-        Function<HoneycombRequest<Object>, byte[]> defaultEncodeFunction = r -> null; // don't use this
+        Function<HoneycombRequest<JsonNode>, byte[]> defaultEncodeFunction = r -> Json.stringify(r.getEvent()).getBytes(UTF_8);
         boolean terminateOnClose = false; // don't terminate the actorsystem
 
         this.client = new HoneycombPlayWSClient(client,
