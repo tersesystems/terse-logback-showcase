@@ -2,7 +2,7 @@
 
 This is an example project to show how to integrate logging in an application using [terse-logback](https://github.com/tersesystems/terse-logback).
 
-It is a [Play application](https://www.playframework.com/documentation/2.8.x/JavaHome) running on Java.
+It is a [Play application](https://www.playframework.com/documentation/2.8.x/JavaHome) written using Play's Java API.
 
 ## Heroku
 
