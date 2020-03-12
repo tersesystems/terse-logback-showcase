@@ -104,3 +104,23 @@ Web Console server running at http://127.0.1.1:8082 (only local connections)
 ```
 
 A browser will come up.  When the Play application is running (and only then), you can enter the following JDBC URL `jdbc:h2:mem:terse-logback` and click connect, and then enter SQL statements.
+
+## JMX Support
+
+You can change the logging level at runtime through [JMX](https://docs.oracle.com/javase/tutorial/jmx/overview/index.html).  A full description is [here](https://tersesystems.com/blog/2019/12/24/controlling-logging-in-a-running-jvm/).
+
+There are three main options to connect through JMX: [Zulu Mission Control](https://www.azul.com/products/zulu-mission-control/), [VisualVM](https://visualvm.github.io/), and [Hawt](https://hawt.io/).
+
+### Zulu Mission Control
+
+[Zulu Mission Control](https://www.azul.com/products/zulu-mission-control/) is a rebranded version of Java Mission Control.  MBeans functionality is out of the box.
+
+### VisualVM
+
+[VisualVM](https://visualvm.github.io/) is a tool for profiling and monitoring the JDK.  The MBean support is available [as a plugin](https://visualvm.github.io/plugins.html).
+
+TabularData is rendered a little differently than in Zulu Mission Control.
+
+### Hawt
+
+[Hawt](https://hawt.io/) is an application server that connects to Jolokia and gives an HTML admin UI.  You will need to install Jolokia as a Java agent and run Play in production mode for this to work.  See https://github.com/wsargent/play-scala-with-jmx for an example of how to do this.
