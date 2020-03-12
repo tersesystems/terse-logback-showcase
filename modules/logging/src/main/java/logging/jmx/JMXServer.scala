@@ -7,6 +7,7 @@ import play.api.inject.ApplicationLifecycle
 
 import scala.concurrent.Future
 
+@Inject
 class JMXServer @Inject()(lifecycle: ApplicationLifecycle) {
 
   def registerBean(objectName: ObjectName, bean: DynamicBean): Unit = {
