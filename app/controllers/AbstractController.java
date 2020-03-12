@@ -23,6 +23,7 @@ public abstract class AbstractController extends Controller implements LoggingCo
         return new ObjectName(String.format("play:type=Controller,name=%s", getClass().getName()));
     }
 
+    // Available for subclasses
     protected DynamicBean.Builder decorateBean(DynamicBean.Builder builder) {
         return builder;
     }
