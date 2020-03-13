@@ -68,6 +68,32 @@ When the ring buffer empties, it writes out the contents of the ringbuffer to th
 
 Note that the database appender lets you query by correlation id, and will periodically reap older logs.  The database used here is an H2 database which is in memory only, but you can also use PostgreSQL or other databases that have first class JSON support.
 
+## Logging Instrumentation with Byte Buddy
+
+One of the more fun things you can do with Terse Logback is to instrument jar files to add logging entry/exit statements at run time.  The full documentation is [here](https://tersesystems.github.io/terse-logback/guide/instrumentation/).
+
+As an example, let's say that we suspect that there's a bug in the [assets builder](https://www.playframework.com/documentation/2.8.x/AssetsOverview#Working-with-public-assets) code base.  We instrument the `controllers.AssetsBuilder` class by adding the following to the `logback.conf` file:
+
+```hocon
+logback.bytebuddy {
+  service-name = "terse-logback-showcase"
+
+  tracing {
+    # This class doesn't have any tracing built into it, but we can add it using instrumentation
+    "controllers.AssetsBuilder" = ["*"]
+  }
+}
+```
+ 
+This means that AssetsBuilder will generate log records at `TRACE` level with messages like:
+
+```text
+entering: play.api.mvc.ActionBuilderImpl.composeParser(play.api.mvc.BodyParser) with arguments=[BodyParser(ignore)] from source Action.scala:439
+exiting: play.api.mvc.ActionBuilderImpl.composeParser(play.api.mvc.BodyParser) with arguments=[BodyParser(ignore)] => (return_type=play.api.mvc.BodyParser return_value=BodyParser(ignore)) from source Action.scala:439
+```
+
+As with the other trace messages, these will all be written out to the ringbuffer, and will be dumped on error.  Note that these traces will not have a correlation id identifying them as part of the request, as the correlation id is added in application code.
+
 ## Custom Request Factory
 
 There is a small modification to swap out Play's `RequestFactory` so that a start time attribute is included on the initial request.  This means that all requests can be sent in as traces, since traces have duration, and is useful in error reporting, since Play's error handling presents the original request prior to any filter/action processing.
