@@ -151,6 +151,7 @@ public class LogEntryFinder {
 
     private LogEntry makeEntry(ResultSet rs) throws SQLException {
         Instant ts = rs.getTimestamp("ts").toInstant();
+        long relativeNanos = rs.getLong("relative_ns");
         int levelValue = rs.getInt("level_value");
         String level = rs.getString("level");
         String evt = rs.getString("evt");
@@ -159,7 +160,7 @@ public class LogEntryFinder {
         String requestId = json.path("correlation_id").asText();
         String loggerName = json.path("logger_name").asText("");
         String uniqueId = rs.getString("event_id");
-        return new LogEntry(ts, levelValue, requestId, level, message, loggerName, evt, uniqueId);
+        return new LogEntry(ts, relativeNanos, levelValue, requestId, level, message, loggerName, evt, uniqueId);
     }
 
     private String getQueryStatement() {
