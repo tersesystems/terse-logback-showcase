@@ -72,7 +72,16 @@ Note that the database appender lets you query by correlation id, and will perio
 
 One of the more fun things you can do with Terse Logback is to instrument jar files to add logging entry/exit statements at run time.  The full documentation is [here](https://tersesystems.github.io/terse-logback/guide/instrumentation/).
 
-As an example, let's say that we suspect that there's a bug in the [assets builder](https://www.playframework.com/documentation/2.8.x/AssetsOverview#Working-with-public-assets) code base.  We instrument the `controllers.AssetsBuilder` class by adding the following to the `logback.conf` file:
+Note that will need to run Play in production mode to load the byte-buddy agent.  The easiest way to do this is to run `sbt stage` and then run the script:
+
+```bash
+export PLAY_APP_SECRET=some-long-secret-to-appease-the-entropy-gods
+target/universal/stage/bin/terse-logback-showcase -Dconfig.resource=application.prod.conf
+```
+
+See the `Procfile` for reference.
+
+So, as an example, let's say that we suspect that there's a bug in the [assets builder](https://www.playframework.com/documentation/2.8.x/AssetsOverview#Working-with-public-assets) code base.  We instrument the `controllers.AssetsBuilder` class by adding the following to the `logback.conf` file:
 
 ```hocon
 logback.bytebuddy {
