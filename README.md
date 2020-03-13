@@ -88,8 +88,8 @@ logback.bytebuddy {
 This means that AssetsBuilder will generate log records at `TRACE` level with messages like:
 
 ```text
-entering: play.api.mvc.ActionBuilderImpl.composeParser(play.api.mvc.BodyParser) with arguments=[BodyParser(ignore)] from source Action.scala:439
-exiting: play.api.mvc.ActionBuilderImpl.composeParser(play.api.mvc.BodyParser) with arguments=[BodyParser(ignore)] => (return_type=play.api.mvc.BodyParser return_value=BodyParser(ignore)) from source Action.scala:439
+entering: controllers.AssetsBuilder.play$api$mvc$Results$_setter_$Continue_$eq(play.api.mvc.Result) with arguments=[Result(100, Map())] from source Assets.scala:715
+exiting: controllers.AssetsBuilder.play$api$mvc$Results$_setter_$Continue_$eq(play.api.mvc.Result) with arguments=[Result(100, Map())] => (return_type=void return_value=null) from source Assets.scala:715
 ```
 
 As with the other trace messages, these will all be written out to the ringbuffer, and will be dumped on error.  Note that these traces will not have a correlation id identifying them as part of the request, as the correlation id is added in application code.
