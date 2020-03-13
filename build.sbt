@@ -21,6 +21,7 @@ lazy val logging = (project in file("modules/logging")).settings(
   libraryDependencies += "com.tersesystems.jmxbuilder" % "jmxbuilder" % "0.0.2",
 
   libraryDependencies += "com.tersesystems.logback" % "logback-budget" % terseLogback,
+  libraryDependencies += "com.tersesystems.logback" % "logback-bytebuddy" % terseLogback,
   libraryDependencies += "com.tersesystems.logback" %% "logback-honeycomb-playws" % terseLogback,
   libraryDependencies += "com.tersesystems.logback" % "logback-turbomarker" % terseLogback,
   libraryDependencies += "com.tersesystems.logback" % "logback-typesafe-config" % terseLogback,  
@@ -40,8 +41,7 @@ lazy val root = (project in file(".")).enablePlugins(PlayJava, JavaAgent, Flyway
   flywayPassword := "",
   flywayLocations += "db/migration",
 
-  // https://devcenter.heroku.com/articles/exec#using-java-debugging-tools
-  javaAgents += JavaAgent( "org.jolokia" % "jolokia-agent-jvm" % "2.0.0-M3" classifier "agent", arguments = "host=0.0.0.0,port=8778"),
+  javaAgents += JavaAgent("com.tersesystems.logback" % "logback-bytebuddy" % terseLogback),
 
   libraryDependencies += "com.h2database" % "h2" % "1.4.200",
   libraryDependencies += guice,
