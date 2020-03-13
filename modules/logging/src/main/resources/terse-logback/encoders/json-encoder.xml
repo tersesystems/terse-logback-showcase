@@ -4,8 +4,12 @@
         <providers>
             <pattern>
                 <pattern>
-                    { "id": "%uniqueId" }
-                    { "start_ms": "#asLong{%startTime}" }
+                    {
+                      "id": "%uniqueId",
+                      "relative_ns": "#asLong{%nanoTime}",
+                      "tse_ms": "#asLong{%tse}",
+                      "start_ms": "#asLong{%startTime}"
+                    }
                 </pattern>
             </pattern>
             <timestamp>

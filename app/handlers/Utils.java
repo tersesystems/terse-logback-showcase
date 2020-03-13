@@ -1,6 +1,7 @@
 package handlers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.tersesystems.logback.classic.NanoTimeMarker;
 import com.tersesystems.logback.tracing.SpanInfo;
 import com.tersesystems.logback.tracing.SpanMarkerFactory;
 import com.tersesystems.logback.uniqueid.IdGenerator;
@@ -68,7 +69,7 @@ public class Utils {
         LogstashMarker methodMarker = Markers.append("request.method", request.method());
         LogstashMarker uriMarker = Markers.append("request.uri", request.uri());
         LogstashMarker statusMarker = Markers.append("response.status", responseStatus);
-        return spanMarker.and(methodMarker).and(uriMarker).and(statusMarker);
+        return spanMarker.and(methodMarker).and(uriMarker).and(statusMarker).and(NanoTimeMarker.create());
     }
 
     public SpanInfo createRootSpan(Http.RequestHeader request) {
