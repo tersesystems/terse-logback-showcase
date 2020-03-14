@@ -4,7 +4,7 @@ organization in ThisBuild := "com.tersesystems.showcase"
 version in ThisBuild := "1.0-SNAPSHOT"
 scalaVersion in ThisBuild := "2.12.10"
 
-val terseLogback = "0.15.3-SNAPSHOT"
+val terseLogback = "0.16.0"
 
 lazy val logging = (project in file("modules/logging")).settings(
   resolvers += Resolver.bintrayRepo("tersesystems", "maven"),

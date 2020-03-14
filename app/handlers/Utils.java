@@ -69,7 +69,7 @@ public class Utils {
         LogstashMarker methodMarker = Markers.append("request.method", request.method());
         LogstashMarker uriMarker = Markers.append("request.uri", request.uri());
         LogstashMarker statusMarker = Markers.append("response.status", responseStatus);
-        return spanMarker.and(methodMarker).and(uriMarker).and(statusMarker).and(NanoTimeMarker.create());
+        return spanMarker.and(methodMarker).and(uriMarker).and(statusMarker);
     }
 
     public SpanInfo createRootSpan(Http.RequestHeader request) {

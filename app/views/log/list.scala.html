@@ -13,7 +13,6 @@
     <thead>
       <tr>
         <th data-type="text-short">Timestamp  <span class="resize-handle"></span></th>
-        <th data-type="text-short">+NS <span class="resize-handle"></span></th>
         <th data-type="text-short">Relative NS <span class="resize-handle"></span></th>
         <th data-type="text-short">Level <span class="resize-handle"></span></th>
         <th data-type="text-short">Logger <span class="resize-handle"></span></th>
@@ -26,7 +25,6 @@
     @for(e <- list) {
     <tr>
       <td><a href="@routes.LogController.show(e.uniqueId)">@e.timestamp</a></td>
-      <td>@e.timestamp.getNano</td>
       <td>@e.relativeNanos</td>
       <td>@e.level</td>
       <td>@e.loggerName</td>

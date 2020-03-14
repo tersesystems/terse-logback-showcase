@@ -1,6 +1,5 @@
 package controllers;
 
-import com.tersesystems.logback.classic.NanoTimeMarker;
 import logging.jmx.JMXServer;
 import play.mvc.Result;
 import play.mvc.With;
@@ -26,11 +25,11 @@ public class HomeController extends AbstractController {
     @With(ContextAction.class)
     public Result normal() {
         if (logger.isDebugEnabled()) {
-            logger.debug(NanoTimeMarker.create(), "About to render /: this is a normal request...");
+            logger.debug("About to render /: this is a normal request...");
         }
         long timeMillis = -System.currentTimeMillis();
         if (logger.isTraceEnabled()) {
-            logger.trace(NanoTimeMarker.create(), "Surely this is less than zero: timeMillis = " + timeMillis);
+            logger.trace("Surely this is less than zero: timeMillis = " + timeMillis);
         }
         if (timeMillis > 0) {
             throw new IllegalStateException("Who could have foreseen this?");
@@ -41,11 +40,11 @@ public class HomeController extends AbstractController {
     @With(ContextAction.class)
     public Result flaky() {
         if (logger.isDebugEnabled()) {
-            logger.debug(NanoTimeMarker.create(), "About to render /flaky: this is a flaky request that throws an exception!");
+            logger.debug("About to render /flaky: this is a flaky request that throws an exception!");
         }
         long timeMillis = System.currentTimeMillis();
         if (logger.isTraceEnabled()) {
-            logger.trace(NanoTimeMarker.create(), "Surely this is less than zero: timeMillis = " + timeMillis);
+            logger.trace("Surely this is less than zero: timeMillis = " + timeMillis);
         }
         if (timeMillis > 0) {
             throw new IllegalStateException("Who could have foreseen this?");
