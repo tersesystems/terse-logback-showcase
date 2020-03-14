@@ -32,8 +32,8 @@
         <appender-ref ref="test"/>
     </appender>
 
-    <appender name="selector-with-unique-id" class="com.tersesystems.logback.uniqueid.UniqueIdEventAppender">
-        <appender class="com.tersesystems.logback.classic.NanoTimeAppender">
+    <appender name="selector-with-unique-id" class="com.tersesystems.logback.uniqueid.UniqueIdComponentAppender">
+        <appender class="com.tersesystems.logback.classic.NanoTimeComponentAppender">
             <appender-ref ref="selector"/>
         </appender>
     </appender>
