@@ -7,6 +7,7 @@ import static java.util.Objects.requireNonNull;
 
 public class LogEntry {
     private final Instant ts;
+    private final Long relativeNanos;
     private final int levelValue;
     private final String requestId;
     private final String level;
@@ -15,8 +16,9 @@ public class LogEntry {
     private final String evt;
     private final String uniqueId;
 
-    public LogEntry(Instant ts, int levelValue, String requestId, String level, String message, String loggerName, String evt, String uniqueId) {
+    public LogEntry(Instant ts, long relativeNanos, int levelValue, String requestId, String level, String message, String loggerName, String evt, String uniqueId) {
         this.ts = requireNonNull(ts, "Null instant");
+        this.relativeNanos = relativeNanos;
         this.levelValue = levelValue;
         this.requestId = requestId;
         this.level = requireNonNull(level, "Null level");
@@ -58,10 +60,15 @@ public class LogEntry {
         return uniqueId;
     }
 
+    public Long relativeNanos() {
+        return relativeNanos;
+    }
+
     @Override
     public String toString() {
         return "LogEntry{" +
                 "ts=" + ts +
+                ", relativeNanos=" + relativeNanos +
                 ", levelValue=" + levelValue +
                 ", requestId='" + requestId + '\'' +
                 ", level='" + level + '\'' +

@@ -6,6 +6,8 @@
                 <pattern>
                     {
                       "id": "%uniqueId",
+                      "relative_ns": "#asLong{%nanoTime}",
+                      "tse_ms": "#asLong{%tse}",
                       "start_ms": "#asLong{%startTime}"
                     }
                 </pattern>

@@ -57,6 +57,9 @@
 
     <conversionRule conversionWord="startTime" converterClass="com.tersesystems.logback.classic.StartTimeConverter" />
 
+    <conversionRule conversionWord="nanoTime"
+                    converterClass="com.tersesystems.logback.classic.NanoTimeConverter" />
+
     <!-- time since epoch -->
     <conversionRule conversionWord="tse" converterClass="com.tersesystems.logback.classic.TimeSinceEpochConverter" />
 

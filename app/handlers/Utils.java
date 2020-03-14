@@ -1,6 +1,7 @@
 package handlers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.tersesystems.logback.classic.NanoTimeMarker;
 import com.tersesystems.logback.tracing.SpanInfo;
 import com.tersesystems.logback.tracing.SpanMarkerFactory;
 import com.tersesystems.logback.uniqueid.IdGenerator;
