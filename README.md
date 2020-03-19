@@ -142,6 +142,8 @@ As with the other trace messages, these will all be written out to the ringbuffe
 
 [System information](https://tersesystems.github.io/terse-logback/guide/systeminfo/) is provided using `logback-sigar`, which uses [Hyperic Sigar](https://github.com/hyperic/sigar) as a back end to provide CPU, memory and load information.
 
+Hyperic Sigar is a Java agent that only runs in production mode, so if you try to run in development mode you will get "Sigar is not registered!" error messages.
+
 ## Error Reporting with Backtraces
 
 Error Reporting is done through the error handlers.  There are two integrations, [Sentry](https://sentry.io/welcome/) and [Honeycomb](https://www.honeycomb.io/).

@@ -1,9 +1,12 @@
 @import play.libs.Scala._
 
-@(list: Seq[_root_.logging.LogEntry], nextPage: Int)
+@(list: Seq[_root_.logging.LogEntry], correlationId: Option[String], nextPage: Int)
 
 @main("Logs") {
-  <h1>Logs</h1>
+  <h1>Logs @correlationId.map{ cid =>
+    (showing only correlation id @cid)
+  }
+  </h1>
   <p style="text-align: right; padding-right: 50px;">
     <a href="@controllers.routes.LogController.list(nextPage)">Page @nextPage &ndash;&gt;</a>
   </p>
