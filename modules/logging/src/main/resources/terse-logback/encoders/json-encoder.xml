@@ -8,7 +8,10 @@
                       "id": "%uniqueId",
                       "relative_ns": "#asLong{%nanoTime}",
                       "tse_ms": "#asLong{%tse}",
-                      "start_ms": "#asLong{%startTime}"
+                      "start_ms": "#asLong{%startTime}",
+                      "cpu": "%cpu",
+                      "mem": "%mem",
+                      "load": "%loadavg"
                     }
                 </pattern>
             </pattern>

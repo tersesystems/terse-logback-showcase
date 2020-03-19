@@ -138,9 +138,9 @@ exiting: controllers.AssetsBuilder.play$api$mvc$Results$_setter_$Continue_$eq(pl
 
 As with the other trace messages, these will all be written out to the ringbuffer, and will be dumped on error.  Note that these traces will not have a correlation id identifying them as part of the request, as the correlation id is added in application code.
 
-## Custom Request Factory
+## System Information
 
-There is a small modification to swap out Play's `RequestFactory` so that a start time attribute is included on the initial request.  This means that all requests can be sent in as traces, since traces have duration, and is useful in error reporting, since Play's error handling presents the original request prior to any filter/action processing.
+[System information](https://tersesystems.github.io/terse-logback/guide/systeminfo/) is provided using `logback-sigar`, which uses [Hyperic Sigar](https://github.com/hyperic/sigar) as a back end to provide CPU, memory and load information.
 
 ## Error Reporting with Backtraces
 

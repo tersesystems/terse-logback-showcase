@@ -31,6 +31,7 @@ lazy val logging = (project in file("modules/logging")).settings(
   libraryDependencies += "com.tersesystems.logback" % "logback-ringbuffer" % terseLogback,
   libraryDependencies += "com.tersesystems.logback" % "logback-uniqueid-appender" % terseLogback,
   libraryDependencies += "com.tersesystems.logback" % "logback-tracing" % terseLogback,
+  libraryDependencies += "com.tersesystems.logback" % "logback-sigar" % terseLogback,
 )
 
 lazy val root = (project in file(".")).enablePlugins(PlayJava, JavaAgent, FlywayPlugin).settings(
