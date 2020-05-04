@@ -179,7 +179,9 @@ A browser will come up.  When the Play application is running (and only then), y
 
 ## JMX Support
 
-You can change the logging level at runtime through [JMX](https://docs.oracle.com/javase/tutorial/jmx/overview/index.html).  A full description is [here](https://tersesystems.com/blog/2019/12/24/controlling-logging-in-a-running-jvm/).
+You can change the logging level at runtime through [JMX](https://docs.oracle.com/javase/tutorial/jmx/overview/index.html).  Most of the boilerplate is under the hood, so you can extend a controller and call [registerWithJMX](https://github.com/tersesystems/terse-logback-showcase/blob/master/app/controllers/AbstractController.java#L38) to show and change the logger for that controller in JMX.
+
+A full description is [here](https://tersesystems.com/blog/2019/12/24/controlling-logging-in-a-running-jvm/) -- the blog post goes into the implementation and also how to work with JMX over HTTP using Jolokia.
 
 There are three main options to connect through JMX: [Zulu Mission Control](https://www.azul.com/products/zulu-mission-control/), [VisualVM](https://visualvm.github.io/), and [Hawt](https://hawt.io/).
 
