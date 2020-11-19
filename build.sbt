@@ -34,16 +34,9 @@ lazy val logging = (project in file("modules/logging")).settings(
   libraryDependencies += "com.tersesystems.logback" % "logback-sigar" % terseLogback,
 )
 
-lazy val root = (project in file(".")).enablePlugins(PlayJava, JavaAgent, FlywayPlugin).settings(
+lazy val root = (project in file(".")).enablePlugins(PlayJava, JavaAgent).settings(
   name := "terse-logback-showcase",
 
-  flywayUrl := "jdbc:h2:mem:terse-logback",
-  flywayUser := "sa",
-  flywayPassword := "",
-  flywayLocations += "db/migration",
-
   javaAgents += JavaAgent("com.tersesystems.logback" % "logback-bytebuddy" % terseLogback),
-
-  libraryDependencies += "com.h2database" % "h2" % "1.4.200",
   libraryDependencies += guice,
 ).aggregate(logging).dependsOn(logging)

@@ -5,13 +5,11 @@
     <include resource="terse-logback/appenders/console-appenders.xml"/>
     <include resource="terse-logback/appenders/jsonfile-appenders.xml"/>
     <include resource="terse-logback/appenders/textfile-appenders.xml"/>
-    <include resource="terse-logback/appenders/jdbc-appenders.xml"/>
 
     <appender name="development" class="com.tersesystems.logback.core.CompositeAppender">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="ASYNC_TEXTFILE"/>
         <appender-ref ref="ASYNC_JSONFILE"/>
-        <appender-ref ref="ASYNC_JDBC_WITH_RINGBUFFER"/>
     </appender>
 
     <appender name="test" class="com.tersesystems.logback.core.CompositeAppender">
@@ -20,7 +18,6 @@
 
     <appender name="production" class="com.tersesystems.logback.core.CompositeAppender">
         <appender-ref ref="ASYNC_JSONFILE"/>
-        <appender-ref ref="ASYNC_JDBC_WITH_RINGBUFFER"/>
     </appender>
 
     <appender name="selector" class="com.tersesystems.logback.core.SelectAppender">
