@@ -31,7 +31,6 @@ import java.util.concurrent.CompletionStage;
 public class ErrorHandler extends play.http.DefaultHttpErrorHandler {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final Logger bufferControl = LoggerFactory.getLogger("JDBC_RINGBUFFER_LOGGER");
     private final LogEntryFinder logEntryFinder;
     private final Futures futures;
     private final SentryHandler sentryHandler;
@@ -69,9 +68,6 @@ public class ErrorHandler extends play.http.DefaultHttpErrorHandler {
             Marker marker = utils.createMarker(rootSpan, request, 500);
             logger.error(marker, "Internal server error for ({}}) [{}}]", request.method(), request.uri(), usefulException);
 
-            // any call to this logger will empty out the ring buffer to JDBC, and from there
-            // we can query traces and assemble them into something we can send to Sentry and Honeycomb.
-            bufferControl.error("Dump the ringbuffer to JDBC here!");
             handleBacktraces(rootSpan, request, usefulException);
         } finally {
             MDC.clear();

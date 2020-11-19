@@ -1,0 +1,27 @@
+<included>
+
+    <appender name="BLACKLITE" class="com.tersesystems.blacklite.logback.BlackliteAppender">
+        <url>logs/live.db</url>
+
+        <archiver class="com.tersesystems.blacklite.archive.DefaultArchiver">
+            <file>logs/archive.db</file>
+            <archiveAfterRows>10000</archiveAfterRows>
+
+            <codec class="com.tersesystems.blacklite.codec.zstd.ZStdCodec">
+                <level>9</level>
+            </codec>
+
+            <rollingStrategy class="com.tersesystems.blacklite.logback.TimeBasedRollingStrategy">
+                <fileNamePattern>logs/archive.%d{yyyyMMdd'T'hhmm,utc}.db</fileNamePattern>
+                <maxHistory>20</maxHistory>
+            </rollingStrategy>
+            
+            <triggeringPolicy class="com.tersesystems.blacklite.archive.ArchiveRowsTriggeringPolicy">
+                <maximumNumRows>500000</maximumNumRows>
+            </triggeringPolicy>
+        </archiver>
+
+        <include resource="terse-logback/encoders/json-encoder.xml"/>
+    </appender>
+
+</included>
