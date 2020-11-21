@@ -3,12 +3,16 @@
     <include resource="terse-logback/exceptions.xml"/>
 
     <include resource="terse-logback/appenders/console-appenders.xml"/>
+    <include resource="terse-logback/appenders/jsonfile-appenders.xml"/>
+    <include resource="terse-logback/appenders/textfile-appenders.xml"/>
     <include resource="terse-logback/appenders/blacklite-appenders.xml"/>
 
     <root>
         <appender class="com.tersesystems.logback.uniqueid.UniqueIdComponentAppender">
             <appender class="com.tersesystems.logback.classic.NanoTimeComponentAppender">
                 <appender-ref ref="CONSOLE"/>
+                <appender-ref ref="ASYNC_JSONFILE"/>
+                <appender-ref ref="ASYNC_TEXTFILE"/>
                 <appender-ref ref="BLACKLITE"/>
             </appender>
         </appender>
