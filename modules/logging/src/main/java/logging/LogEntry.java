@@ -1,27 +1,27 @@
 package logging;
 
+import org.slf4j.event.Level;
+
 import java.time.Instant;
 import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
 
 public class LogEntry {
-    private final Instant ts;
+    private final Instant timestamp;
     private final Long relativeNanos;
-    private final int levelValue;
+    private final Level level;
     private final String requestId;
-    private final String level;
     private final String message;
     private final String loggerName;
     private final String evt;
     private final String uniqueId;
 
-    public LogEntry(Instant ts, long relativeNanos, int levelValue, String requestId, String level, String message, String loggerName, String evt, String uniqueId) {
-        this.ts = requireNonNull(ts, "Null instant");
+    public LogEntry(Instant timestamp, Long relativeNanos, Level level, String requestId, String message, String loggerName, String evt, String uniqueId) {
+        this.timestamp = requireNonNull(timestamp, "Null instant");
         this.relativeNanos = relativeNanos;
-        this.levelValue = levelValue;
+        this.level = level;
         this.requestId = requestId;
-        this.level = requireNonNull(level, "Null level");
         this.message = requireNonNull(message, "Null message");
         this.loggerName = requireNonNull(loggerName, "Null logger name");
         this.evt = requireNonNull(evt, "Null event");
@@ -29,14 +29,12 @@ public class LogEntry {
     }
 
     public Instant timestamp() {
-        return ts;
+        return timestamp;
     }
 
-    public int levelValue() {
-        return levelValue;
-    }
+    public Long relativeNanos() { return relativeNanos; }
 
-    public String level() {
+    public Level level() {
         return level;
     }
 
@@ -60,18 +58,13 @@ public class LogEntry {
         return uniqueId;
     }
 
-    public Long relativeNanos() {
-        return relativeNanos;
-    }
-
     @Override
     public String toString() {
         return "LogEntry{" +
-                "ts=" + ts +
+                "timestamp=" + timestamp +
                 ", relativeNanos=" + relativeNanos +
-                ", levelValue=" + levelValue +
+                ", level=" + level +
                 ", requestId='" + requestId + '\'' +
-                ", level='" + level + '\'' +
                 ", message='" + message + '\'' +
                 ", loggerName='" + loggerName + '\'' +
                 ", evt='" + evt + '\'' +

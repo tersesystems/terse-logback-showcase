@@ -10,6 +10,7 @@ import io.sentry.event.interfaces.ExceptionInterface;
 import logging.LogEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
 import play.api.UsefulException;
 import play.libs.Json;
 import play.mvc.Http;
@@ -73,10 +74,10 @@ public class SentryHandler {
                 .build();
     }
 
-    private Breadcrumb.Level mapToBreadcrumbLevel(String rowLevel) {
+    private Breadcrumb.Level mapToBreadcrumbLevel(Level level) {
         // Breadcrumb doesn't have a TRACE level
-        String level = (rowLevel.equalsIgnoreCase("TRACE")) ? "DEBUG" : rowLevel;
-        return Breadcrumb.Level.valueOf(level);
+        String l = (level.toString().equals("TRACE")) ? "DEBUG" : level.toString();
+        return Breadcrumb.Level.valueOf(l);
     }
 
     private Map<String, String> buildEventData(JsonNode evt) {

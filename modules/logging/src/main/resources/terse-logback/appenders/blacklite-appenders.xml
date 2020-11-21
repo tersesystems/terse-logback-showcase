@@ -1,23 +1,19 @@
 <included>
 
     <appender name="BLACKLITE" class="com.tersesystems.blacklite.logback.BlackliteAppender">
-        <url>logs/live.db</url>
+        <file>${blacklite.file}</file>
 
         <archiver class="com.tersesystems.blacklite.archive.DefaultArchiver">
-            <file>logs/archive.db</file>
-            <archiveAfterRows>10000</archiveAfterRows>
-
-            <codec class="com.tersesystems.blacklite.codec.zstd.ZStdCodec">
-                <level>9</level>
-            </codec>
+            <file>${blacklite.archive.file}</file>
+            <archiveAfterRows>${blacklite.archive.after}</archiveAfterRows>
 
             <rollingStrategy class="com.tersesystems.blacklite.logback.TimeBasedRollingStrategy">
-                <fileNamePattern>logs/archive.%d{yyyyMMdd'T'hhmm,utc}.db</fileNamePattern>
-                <maxHistory>20</maxHistory>
+                <fileNamePattern>${blacklite.archive.pattern}</fileNamePattern>
+                <maxHistory>${blacklite.archive.history}</maxHistory>
             </rollingStrategy>
             
             <triggeringPolicy class="com.tersesystems.blacklite.archive.ArchiveRowsTriggeringPolicy">
-                <maximumNumRows>500000</maximumNumRows>
+                <maximumNumRows>${blacklite.archive.max}</maximumNumRows>
             </triggeringPolicy>
         </archiver>
 
