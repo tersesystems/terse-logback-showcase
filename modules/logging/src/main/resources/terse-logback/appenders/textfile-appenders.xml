@@ -12,10 +12,6 @@
 -->
 <included>
     <appender name="ASYNC_TEXTFILE" class="net.logstash.logback.appender.LoggingEventAsyncDisruptorAppender">
-        <filter class="com.tersesystems.logback.core.EnabledFilter">
-            <enabled>${textfile.enabled}</enabled>
-        </filter>
-
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>${textfile.threshold}</level>
         </filter>

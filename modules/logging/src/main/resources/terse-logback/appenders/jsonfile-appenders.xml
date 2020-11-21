@@ -13,10 +13,6 @@
 <included>
 
     <appender name="ASYNC_JSONFILE" class="net.logstash.logback.appender.LoggingEventAsyncDisruptorAppender">
-        <filter class="com.tersesystems.logback.core.EnabledFilter">
-            <enabled>${jsonfile.enabled}</enabled>
-        </filter>
-
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>${jsonfile.threshold}</level>
         </filter>
