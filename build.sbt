@@ -4,7 +4,7 @@ organization in ThisBuild := "com.tersesystems.showcase"
 version in ThisBuild := "1.0-SNAPSHOT"
 scalaVersion in ThisBuild := "2.12.10"
 
-val terseLogback = "0.16.0"
+val terseLogback = "0.16.1"
 
 lazy val logging = (project in file("modules/logging")).settings(
   resolvers += Resolver.bintrayRepo("tersesystems", "maven"),
@@ -18,8 +18,8 @@ lazy val logging = (project in file("modules/logging")).settings(
 
   libraryDependencies += "io.sentry" % "sentry-logback" % "1.7.30",
 
-  libraryDependencies += "com.tersesystems.blacklite" % "blacklite-logback" % "0.1.1-SNAPSHOT",
-  libraryDependencies += "com.tersesystems.blacklite" % "blacklite-codec-zstd" % "0.1.1-SNAPSHOT",
+  libraryDependencies += "com.tersesystems.blacklite" % "blacklite-logback" % "0.1.1",
+  libraryDependencies += "com.tersesystems.blacklite" % "blacklite-codec-zstd" % "0.1.1",
 
   libraryDependencies += "com.tersesystems.jmxbuilder" % "jmxbuilder" % "0.0.2",
 

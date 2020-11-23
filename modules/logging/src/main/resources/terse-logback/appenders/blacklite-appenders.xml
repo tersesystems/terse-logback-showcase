@@ -3,20 +3,6 @@
     <appender name="BLACKLITE" class="com.tersesystems.blacklite.logback.BlackliteAppender">
         <file>${blacklite.file}</file>
 
-        <archiver class="com.tersesystems.blacklite.archive.DefaultArchiver">
-            <file>${blacklite.archive.file}</file>
-            <archiveAfterRows>${blacklite.archive.after}</archiveAfterRows>
-
-            <rollingStrategy class="com.tersesystems.blacklite.logback.TimeBasedRollingStrategy">
-                <fileNamePattern>${blacklite.archive.pattern}</fileNamePattern>
-                <maxHistory>${blacklite.archive.history}</maxHistory>
-            </rollingStrategy>
-            
-            <triggeringPolicy class="com.tersesystems.blacklite.archive.ArchiveRowsTriggeringPolicy">
-                <maximumNumRows>${blacklite.archive.max}</maximumNumRows>
-            </triggeringPolicy>
-        </archiver>
-
         <include resource="terse-logback/encoders/json-encoder.xml"/>
     </appender>
 
