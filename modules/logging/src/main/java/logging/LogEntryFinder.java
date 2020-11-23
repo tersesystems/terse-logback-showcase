@@ -1,5 +1,6 @@
 package logging;
 
+import ch.qos.logback.classic.Level;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.typesafe.config.Config;
 import org.slf4j.Logger;
@@ -11,10 +12,7 @@ import play.libs.Json;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,13 +33,11 @@ public class LogEntryFinder {
     @Inject
     public LogEntryFinder(@NamedDatabase("logging") Database db,
                           Config config,
-                          ApplicationLifecycle lifecycle,
                           LoggingExecutionContext executionContext) {
         this.db = db;
         this.config = config;
         this.executionContext = executionContext;
         this.pageSize = 20;
-        lifecycle.addStopHook(this::truncateTable);
     }
 
     public CompletionStage<List<LogEntry>> list(Integer offset) {
@@ -89,25 +85,6 @@ public class LogEntryFinder {
                 executionContext);
     }
 
-    private CompletionStage<Void> truncateTable() {
-        return supplyAsync(
-                () -> {
-                    try (Connection conn = db.getConnection()) {
-                        truncate(conn);
-                    } catch (SQLException e) {
-                        logger.error("Cannot truncate database", e);
-                    }
-                    return null;
-                },
-                executionContext);
-    }
-
-    private void truncate(Connection conn) throws SQLException {
-        try (PreparedStatement ps = conn.prepareStatement(truncateStatement())) {
-            ps.executeUpdate();
-        }
-    }
-
     public CompletionStage<Optional<LogEntry>> findById(String ts) {
         return supplyAsync(() -> {
             try (Connection conn = db.getConnection()) {
@@ -150,17 +127,19 @@ public class LogEntryFinder {
     }
 
     private LogEntry makeEntry(ResultSet rs) throws SQLException {
-        Instant ts = rs.getTimestamp("ts").toInstant();
-        long relativeNanos = rs.getLong("relative_ns");
-        int levelValue = rs.getInt("level_value");
-        String level = rs.getString("level");
-        String evt = rs.getString("evt");
+        final long seconds = rs.getLong("timestamp");
+        final int nanos = rs.getInt("nanos");
+        Instant ts = Instant.ofEpochSecond(seconds, nanos);
+        Level logbackLevel = Level.toLevel(rs.getInt("level"));
+        final org.slf4j.event.Level level = org.slf4j.event.Level.valueOf(logbackLevel.levelStr);
+        String evt = rs.getString("content");
         JsonNode json = Json.parse(evt);
+        Long relativeNanos = json.path("relative_ns").asLong();
         String message = json.path("message").asText("");
         String requestId = json.path("correlation_id").asText();
         String loggerName = json.path("logger_name").asText("");
         String uniqueId = rs.getString("event_id");
-        return new LogEntry(ts, relativeNanos, levelValue, requestId, level, message, loggerName, evt, uniqueId);
+        return new LogEntry(ts, relativeNanos, level, requestId, message, loggerName, evt, uniqueId);
     }
 
     private String getQueryStatement() {
@@ -174,9 +153,4 @@ public class LogEntryFinder {
     private String byCorrelationIdStatement() {
         return config.getString("logging.sql.byCorrelationIdStatement");
     }
-
-    private String truncateStatement() {
-        return config.getString("logging.sql.truncateStatement");
-    }
-
 }
