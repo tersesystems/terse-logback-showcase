@@ -18,8 +18,8 @@ lazy val logging = (project in file("modules/logging")).settings(
 
   libraryDependencies += "io.sentry" % "sentry-logback" % "1.7.30",
 
-  libraryDependencies += "com.tersesystems.blacklite" % "blacklite-logback" % "0.1.1",
-  libraryDependencies += "com.tersesystems.blacklite" % "blacklite-codec-zstd" % "0.1.1",
+  libraryDependencies += "com.tersesystems.blacklite" % "blacklite-logback" % "1.0.0",
+  libraryDependencies += "com.tersesystems.blacklite" % "blacklite-codec-zstd" % "1.0.0",
 
   libraryDependencies += "com.tersesystems.jmxbuilder" % "jmxbuilder" % "0.0.2",
 

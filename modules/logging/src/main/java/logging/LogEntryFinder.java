@@ -127,7 +127,7 @@ public class LogEntryFinder {
     }
 
     private LogEntry makeEntry(ResultSet rs) throws SQLException {
-        final long seconds = rs.getLong("timestamp");
+        final long seconds = rs.getLong("epoch_secs");
         final int nanos = rs.getInt("nanos");
         Instant ts = Instant.ofEpochSecond(seconds, nanos);
         Level logbackLevel = Level.toLevel(rs.getInt("level"));
