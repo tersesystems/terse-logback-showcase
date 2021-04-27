@@ -2,12 +2,11 @@ import sbt.Keys.libraryDependencies
 
 organization in ThisBuild := "com.tersesystems.showcase"
 version in ThisBuild := "1.0-SNAPSHOT"
-scalaVersion in ThisBuild := "2.12.10"
+scalaVersion in ThisBuild := "2.12.12"
 
-val terseLogback = "0.16.1"
+val terseLogback = "0.16.2"
 
 lazy val logging = (project in file("modules/logging")).settings(
-  resolvers += Resolver.bintrayRepo("tersesystems", "maven"),
   resolvers += Resolver.mavenLocal,
 
   libraryDependencies += playCore,
@@ -21,7 +20,7 @@ lazy val logging = (project in file("modules/logging")).settings(
   libraryDependencies += "com.tersesystems.blacklite" % "blacklite-logback" % "1.0.0",
   libraryDependencies += "com.tersesystems.blacklite" % "blacklite-codec-zstd" % "1.0.0",
 
-  libraryDependencies += "com.tersesystems.jmxbuilder" % "jmxbuilder" % "0.0.2",
+  libraryDependencies += "com.tersesystems.jmxbuilder" % "jmxbuilder" % "0.0.5",
 
   libraryDependencies += "com.tersesystems.logback" % "logback-budget" % terseLogback,
   libraryDependencies += "com.tersesystems.logback" % "logback-bytebuddy" % terseLogback,
