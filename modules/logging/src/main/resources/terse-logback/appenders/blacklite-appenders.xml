@@ -1,9 +1,0 @@
-<included>
-
-    <appender name="BLACKLITE" class="com.tersesystems.blacklite.logback.BlackliteAppender">
-        <file>${blacklite.file}</file>
-
-        <include resource="terse-logback/encoders/json-encoder.xml"/>
-    </appender>
-
-</included>

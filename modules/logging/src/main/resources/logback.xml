@@ -2,10 +2,62 @@
     <include resource="terse-logback/initial.xml"/>
     <include resource="terse-logback/exceptions.xml"/>
 
-    <include resource="terse-logback/appenders/console-appenders.xml"/>
-    <include resource="terse-logback/appenders/jsonfile-appenders.xml"/>
-    <include resource="terse-logback/appenders/textfile-appenders.xml"/>
-    <include resource="terse-logback/appenders/blacklite-appenders.xml"/>
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${console.threshold}</level>
+        </filter>
+
+        <include resource="terse-logback/encoders/short-encoder.xml"/>
+
+        <withJansi>${console.withJansi}</withJansi>
+    </appender>
+
+    <appender name="ASYNC_JSONFILE" class="net.logstash.logback.appender.LoggingEventAsyncDisruptorAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${jsonfile.threshold}</level>
+        </filter>
+
+        <appender class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${jsonfile.location}</file>
+            <append>${jsonfile.append}</append>
+
+            <!--
+              This quadruples logging throughput (in theory) https://logback.qos.ch/manual/appenders.html#FileAppender
+             -->
+            <immediateFlush>${jsonfile.immediateFlush}</immediateFlush>
+
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <fileNamePattern>${jsonfile.rollingPolicy.fileNamePattern}</fileNamePattern>
+                <maxHistory>${jsonfile.rollingPolicy.maxHistory}</maxHistory>
+            </rollingPolicy>
+
+            <include resource="terse-logback/encoders/json-encoder.xml"/>
+        </appender>
+    </appender>
+
+    <appender name="ASYNC_TEXTFILE" class="net.logstash.logback.appender.LoggingEventAsyncDisruptorAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${textfile.threshold}</level>
+        </filter>
+
+        <appender class="ch.qos.logback.core.FileAppender">
+            <file>${textfile.location}</file>
+            <append>${textfile.append}</append>
+
+            <!--
+              This quadruples logging throughput (in theory) https://logback.qos.ch/manual/appenders.html#FileAppender
+             -->
+            <immediateFlush>${textfile.immediateFlush}</immediateFlush>
+
+            <include resource="terse-logback/encoders/detailed-encoder.xml"/>
+        </appender>
+    </appender>
+
+    <appender name="BLACKLITE" class="com.tersesystems.blacklite.logback.BlackliteAppender">
+        <file>${blacklite.file}</file>
+
+        <include resource="terse-logback/encoders/json-encoder.xml"/>
+    </appender>
 
     <root>
         <appender class="com.tersesystems.logback.uniqueid.UniqueIdComponentAppender">
