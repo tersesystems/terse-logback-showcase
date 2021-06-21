@@ -42,6 +42,12 @@
         <object name="highlightMap" path="highlight" scope="context"/>
     </typesafeConfig>
 
+    <!-- calls removeHandlersForRootLogger / install -->
+    <!-- play already does this -->
+    <!-- <newRule pattern="configuration/slf4jBridgeHandler"
+             actionClass="com.tersesystems.logback.classic.SLF4JBridgeHandlerAction"/> -->
+    <!-- <slf4jBridgeHandler/> -->
+
     <!-- playframework already adds a context listener -->
     <!--    <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">-->
     <!--        <resetJUL>true</resetJUL>-->

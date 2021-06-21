@@ -4,11 +4,10 @@ organization in ThisBuild := "com.tersesystems.showcase"
 version in ThisBuild := "1.0-SNAPSHOT"
 scalaVersion in ThisBuild := "2.12.12"
 
-val terseLogback = "0.16.2"
+val terseLogback = "1.0.0"
 
 lazy val logging = (project in file("modules/logging")).settings(
-  resolvers += Resolver.mavenLocal,
-
+  
   libraryDependencies += playCore,
   libraryDependencies += javaJdbc,
 
@@ -17,8 +16,8 @@ lazy val logging = (project in file("modules/logging")).settings(
 
   libraryDependencies += "io.sentry" % "sentry-logback" % "1.7.30",
 
-  libraryDependencies += "com.tersesystems.blacklite" % "blacklite-logback" % "1.0.0",
-  libraryDependencies += "com.tersesystems.blacklite" % "blacklite-codec-zstd" % "1.0.0",
+  libraryDependencies += "com.tersesystems.blacklite" % "blacklite-logback" % "1.0.1",
+  libraryDependencies += "com.tersesystems.blacklite" % "blacklite-codec-zstd" % "1.0.1",
 
   libraryDependencies += "com.tersesystems.jmxbuilder" % "jmxbuilder" % "0.0.5",
 
