@@ -4,9 +4,10 @@ organization in ThisBuild := "com.tersesystems.showcase"
 version in ThisBuild := "1.0-SNAPSHOT"
 scalaVersion in ThisBuild := "2.12.12"
 
-val terseLogback = "1.0.0"
+val terseLogback = "1.0.4"
 
 lazy val logging = (project in file("modules/logging")).settings(
+  resolvers += Resolver.mavenLocal,
   
   libraryDependencies += playCore,
   libraryDependencies += javaJdbc,
