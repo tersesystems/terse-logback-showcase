@@ -4,7 +4,7 @@ organization in ThisBuild := "com.tersesystems.showcase"
 version in ThisBuild := "1.0-SNAPSHOT"
 scalaVersion in ThisBuild := "2.12.12"
 
-val terseLogback = "1.0.4"
+val terseLogback = "1.0.2"
 
 lazy val logging = (project in file("modules/logging")).settings(
   resolvers += Resolver.mavenLocal,
@@ -32,8 +32,7 @@ lazy val logging = (project in file("modules/logging")).settings(
   libraryDependencies += "com.tersesystems.logback" % "logback-exception-mapping-providers" % terseLogback,
   libraryDependencies += "com.tersesystems.logback" % "logback-ringbuffer" % terseLogback,
   libraryDependencies += "com.tersesystems.logback" % "logback-uniqueid-appender" % terseLogback,
-  libraryDependencies += "com.tersesystems.logback" % "logback-tracing" % terseLogback,
-  libraryDependencies += "com.tersesystems.logback" % "logback-sigar" % terseLogback,
+  libraryDependencies += "com.tersesystems.logback" % "logback-tracing" % terseLogback  
 )
 
 lazy val root = (project in file(".")).enablePlugins(PlayJava, JavaAgent).settings(

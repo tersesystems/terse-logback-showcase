@@ -138,12 +138,6 @@ exiting: controllers.AssetsBuilder.play$api$mvc$Results$_setter_$Continue_$eq(pl
 
 As with the other trace messages, these will all be written out to the blacklite appender.  Note that these traces will not have a correlation id identifying them as part of the request, as the correlation id is added in application code.
 
-## System Information
-
-[System information](https://tersesystems.github.io/terse-logback/guide/systeminfo/) is provided using `logback-sigar`, which uses [Hyperic Sigar](https://github.com/hyperic/sigar) as a back end to provide CPU, memory and load information.
-
-Hyperic Sigar is a Java agent that only runs in production mode, so if you try to run in development mode you will get "Sigar is not registered!" error messages.
-
 ## Error Reporting with Backtraces
 
 Error Reporting is done through the error handlers.  There are two integrations, [Sentry](https://sentry.io/welcome/) and [Honeycomb](https://www.honeycomb.io/).
