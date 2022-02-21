@@ -36,8 +36,6 @@
     <newRule pattern="*/ringBuffer-ref"
              actionClass="com.tersesystems.logback.ringbuffer.RingBufferRefAction"/>
 
-    <newRule pattern="*/sigar" actionClass="com.tersesystems.logback.sigar.SigarAction"/>
-
     <typesafeConfig>
         <object name="highlightMap" path="highlight" scope="context"/>
     </typesafeConfig>
@@ -59,12 +57,6 @@
     <shutdownHook class="ch.qos.logback.core.hook.DelayingShutdownHook">
         <delay>${shutdownHook.delay}</delay>
     </shutdownHook>
-
-    <sigar/>
-
-    <conversionRule conversionWord="cpu" converterClass="com.tersesystems.logback.sigar.CPUPercentageConverter"/>
-    <conversionRule conversionWord="mem" converterClass="com.tersesystems.logback.sigar.MemoryPercentageConverter"/>
-    <conversionRule conversionWord="loadavg" converterClass="com.tersesystems.logback.sigar.LoadAverageConverter"/>
 
     <!-- highlight based on context map -->
     <conversionRule conversionWord="terseHighlight" converterClass="com.tersesystems.logback.classic.TerseHighlightConverter" />
