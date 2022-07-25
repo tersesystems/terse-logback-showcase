@@ -1,24 +1,24 @@
 import sbt.Keys.libraryDependencies
 
-organization in ThisBuild := "com.tersesystems.showcase"
-version in ThisBuild := "1.0-SNAPSHOT"
-scalaVersion in ThisBuild := "2.12.12"
+ThisBuild / organization := "com.tersesystems.showcase"
+ThisBuild / version := "1.0-SNAPSHOT"
+ThisBuild / scalaVersion := "2.12.16"
+ThisBuild / resolvers += Resolver.mavenLocal
 
 val terseLogback = "1.0.2"
 
 lazy val logging = (project in file("modules/logging")).settings(
-  resolvers += Resolver.mavenLocal,
   
   libraryDependencies += playCore,
   libraryDependencies += javaJdbc,
 
-  libraryDependencies += "org.codehaus.janino" % "janino" % "3.0.11",
-  libraryDependencies += "org.fusesource.jansi" % "jansi" % "1.17.1",
+  libraryDependencies += "org.codehaus.janino" % "janino" % "3.1.7",
+  libraryDependencies += "org.fusesource.jansi" % "jansi" % "2.4.0",
 
   libraryDependencies += "io.sentry" % "sentry-logback" % "1.7.30",
 
-  libraryDependencies += "com.tersesystems.blacklite" % "blacklite-logback" % "1.0.1",
-  libraryDependencies += "com.tersesystems.blacklite" % "blacklite-codec-zstd" % "1.0.1",
+  libraryDependencies += "com.tersesystems.blacklite" % "blacklite-logback" % "1.2.0",
+  libraryDependencies += "com.tersesystems.blacklite" % "blacklite-codec-zstd" % "1.2.0",
 
   libraryDependencies += "com.tersesystems.jmxbuilder" % "jmxbuilder" % "0.0.5",
 
@@ -32,7 +32,7 @@ lazy val logging = (project in file("modules/logging")).settings(
   libraryDependencies += "com.tersesystems.logback" % "logback-exception-mapping-providers" % terseLogback,
   libraryDependencies += "com.tersesystems.logback" % "logback-ringbuffer" % terseLogback,
   libraryDependencies += "com.tersesystems.logback" % "logback-uniqueid-appender" % terseLogback,
-  libraryDependencies += "com.tersesystems.logback" % "logback-tracing" % terseLogback  
+  libraryDependencies += "com.tersesystems.logback" % "logback-tracing" % terseLogback
 )
 
 lazy val root = (project in file(".")).enablePlugins(PlayJava, JavaAgent).settings(
