@@ -1,7 +1,7 @@
 @()
 
 @main("Terse Logback Showcase") {
-  <h4><a href="@routes.HomeController.index">Home</a> | <a href="@routes.LogController.list(1)">Logs</a></h4>
+  <h4><a href="@routes.HomeController.index()">Home</a> | <a href="@routes.LogController.list(1)">Logs</a></h4>
 
   <p>
     This is a demonstration of how easy it is to present logs in multiple formats depending on environment,
@@ -9,11 +9,11 @@
   </p>
 
   <p>
-    Click on <a href="@controllers.routes.HomeController.normal">this link</a> to render a page normally.  [<a href="https://github.com/tersesystems/terse-logback-showcase/blob/master/app/controllers/HomeController.java#L22">Source code</a>]
+    Click on <a href="@controllers.routes.HomeController.normal()">this link</a> to render a page normally.  [<a href="https://github.com/tersesystems/terse-logback-showcase/blob/master/app/controllers/HomeController.java#L22">Source code</a>]
   </p>
 
   <p>
-    Click on <a href="@controllers.routes.HomeController.flaky">this flaky link</a> to cause errors. [<a href="https://github.com/tersesystems/terse-logback-showcase/blob/master/app/controllers/HomeController.java#L33">Source code</a>]
+    Click on <a href="@controllers.routes.HomeController.flaky()">this flaky link</a> to cause errors. [<a href="https://github.com/tersesystems/terse-logback-showcase/blob/master/app/controllers/HomeController.java#L33">Source code</a>]
   </p>
 
   <p>

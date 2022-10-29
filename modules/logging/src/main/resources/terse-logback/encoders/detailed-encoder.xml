@@ -1,6 +1,0 @@
-<included>
-    <encoder>
-        <pattern>${encoders.detailed.pattern}</pattern>
-        <outputPatternAsHeader>${encoders.detailed.outputPatternAsHeader}</outputPatternAsHeader>
-    </encoder>
-</included>

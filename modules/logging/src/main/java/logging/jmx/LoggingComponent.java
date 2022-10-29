@@ -3,7 +3,7 @@ package logging.jmx;
 import com.tersesystems.jmxbuilder.AttributeInfo;
 import com.tersesystems.jmxbuilder.DescriptorSupport;
 import com.tersesystems.jmxbuilder.DynamicBean;
-import logging.ChangeLogLevel;
+import com.tersesystems.logback.classic.ChangeLogLevel;
 
 import java.util.Set;
 

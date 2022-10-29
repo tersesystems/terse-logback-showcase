@@ -2,10 +2,10 @@ import sbt.Keys.libraryDependencies
 
 ThisBuild / organization := "com.tersesystems.showcase"
 ThisBuild / version := "1.0-SNAPSHOT"
-ThisBuild / scalaVersion := "2.12.16"
-ThisBuild / resolvers += Resolver.mavenLocal
+ThisBuild / scalaVersion := "2.13.8"
+//ThisBuild / resolvers += Resolver.mavenLocal
 
-val terseLogback = "1.0.2"
+val terseLogback = "1.1.0"
 
 lazy val logging = (project in file("modules/logging")).settings(
   
@@ -24,13 +24,12 @@ lazy val logging = (project in file("modules/logging")).settings(
 
   libraryDependencies += "com.tersesystems.logback" % "logback-budget" % terseLogback,
   libraryDependencies += "com.tersesystems.logback" % "logback-bytebuddy" % terseLogback,
-  libraryDependencies += "com.tersesystems.logback" %% "logback-honeycomb-playws" % terseLogback,
+  libraryDependencies += "com.tersesystems.logback" % "logback-honeycomb-okhttp" % terseLogback,
   libraryDependencies += "com.tersesystems.logback" % "logback-turbomarker" % terseLogback,
   libraryDependencies += "com.tersesystems.logback" % "logback-typesafe-config" % terseLogback,  
   libraryDependencies += "com.tersesystems.logback" % "logback-correlationid" % terseLogback,
   libraryDependencies += "com.tersesystems.logback" % "logback-exception-mapping" % terseLogback,
   libraryDependencies += "com.tersesystems.logback" % "logback-exception-mapping-providers" % terseLogback,
-  libraryDependencies += "com.tersesystems.logback" % "logback-ringbuffer" % terseLogback,
   libraryDependencies += "com.tersesystems.logback" % "logback-uniqueid-appender" % terseLogback,
   libraryDependencies += "com.tersesystems.logback" % "logback-tracing" % terseLogback
 )
