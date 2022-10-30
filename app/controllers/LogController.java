@@ -43,7 +43,7 @@ public class LogController extends Controller {
     }
 
     public CompletionStage<Result> correlation(String correlationId, Integer page) {
-        return finder.findByCorrelation(correlationId).thenApply(list -> {
+        return finder.findByRequestId(correlationId).thenApply(list -> {
             scala.collection.mutable.Seq<LogEntry> scalaList = JavaConverters.asScalaBuffer(list);
             return ok(views.html.log.list.render(scalaList.toSeq(), scala.Some.apply(correlationId),page + 1));
         });

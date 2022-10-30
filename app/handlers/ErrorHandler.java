@@ -24,6 +24,8 @@ import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
+import static logging.Constants.REQUEST_ID;
+
 /**
  * Error handler handles exceptions in a request which were not handled at a higher layer.
  */
@@ -61,7 +63,8 @@ public class ErrorHandler extends play.http.DefaultHttpErrorHandler {
     @Override
     protected void logServerError(Http.RequestHeader request, UsefulException usefulException) {
         try {
-            MDC.put("correlation_id", request.id().toString());
+            // Make sure request_id exists in MDC before logging the error
+            MDC.put(REQUEST_ID, request.id().toString());
 
             // Log the error itself...
             SpanInfo rootSpan = utils.createRootSpan(request);
@@ -88,12 +91,16 @@ public class ErrorHandler extends play.http.DefaultHttpErrorHandler {
     }
 
     private void handleBacktraces(SpanInfo spanInfo, Http.RequestHeader request, UsefulException usefulException) {
-        String cid = Long.toString(request.id());
+        String requestId = Long.toString(request.id());
         Duration spanDuration = spanInfo.duration(); // freeze this so it's not affected by delay
 
         // Delay for a second so the queue can clear to the appender.
         futures.delayed(() ->
-            logEntryFinder.findByCorrelation(cid).thenAcceptAsync(rows -> {
+            logEntryFinder.findByRequestId(requestId).thenAcceptAsync(rows -> {
+                if (rows.size() == 0) {
+                    logger.warn("No rows found for request id {}", requestId);
+                }
+
                 if (utils.isSentryEnabled()) {
                     sentryHandler.handle(rows, request, usefulException);
                 }
@@ -101,7 +108,7 @@ public class ErrorHandler extends play.http.DefaultHttpErrorHandler {
                     honeycombHandler.handle(spanInfo, spanDuration, rows, request, usefulException);
                 }
                 if (utils.isFilesEnabled()) {
-                    fileHandler.handle(cid, rows);
+                    fileHandler.handle(requestId, rows);
                 }
             }
         ), Duration.ofSeconds(1));

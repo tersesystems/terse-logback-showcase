@@ -21,7 +21,7 @@ import java.time.Instant;
 import java.util.Optional;
 
 public class Utils {
-
+    
     private final IdGenerator idgen = new RandomUUIDIdGenerator();
     private final SpanMarkerFactory spanMarkerFactory = new SpanMarkerFactory();
     private final String serviceName;

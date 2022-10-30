@@ -110,15 +110,15 @@ public class HoneycombHandler {
     private void postBackTraces(List<? extends LogEntry> rows, SpanInfo spanInfo) {
         Stream<HoneycombRequest<JsonNode>> stream = createBacktraceStream(rows.stream(), spanInfo);
 
-        // Send batches to honeycomb 10 at a time
-        batchedStreamOf(stream, 10).forEach((List<HoneycombRequest<JsonNode>> batch) -> {
+        // Send batches to honeycomb 1 at a time
+        batchedStreamOf(stream, 1).forEach((List<HoneycombRequest<JsonNode>> batch) -> {
             CompletionStage<List<HoneycombResponse>> f2 = honeycombClient.postBatch(batch);
             f2.thenAccept(responses -> {
                 for (HoneycombResponse response : responses) {
                     if (response.isSuccess()) {
-                        logger.debug("postBackTraces: Successful post of backtraces = " + response.toString());
+                        logger.info("postBackTraces: Successful post of backtraces = " + response);
                     } else {
-                        logger.error("postBackTraces: Bad honeycomb response {}", response.toString());
+                        logger.error("postBackTraces: Bad honeycomb response {}", response);
                     }
                 }
             });

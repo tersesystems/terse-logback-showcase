@@ -1,7 +1,9 @@
 package handlers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.typesafe.config.Config;
 import io.sentry.*;
+import io.sentry.protocol.SentryId;
 import logging.LogEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +21,14 @@ public class SentryHandler {
 
   private static final Logger logger = LoggerFactory.getLogger(SentryHandler.class);
 
+  @Inject
+  public SentryHandler(Config config) {
+    // https://docs.sentry.io/platforms/java/
+    Sentry.init(options -> {
+      options.setDsn(config.getString("sentry.dsn"));
+    });
+  }
+
   void handle(List<? extends LogEntry> rows, Http.RequestHeader request, UsefulException usefulException) {
     // Delay the query for a second so the async disruptor queue has a chance to clear.
     // Query for the records relating to this request.
@@ -31,14 +41,20 @@ public class SentryHandler {
       }
 
       SentryEvent event = buildEvent(request, usefulException, breadcrumbs);
-      Sentry.captureEvent(event);
+      SentryId sentryId = Sentry.captureEvent(event);
+
+      // if this is 00000... then you don't have the right DSN
+      if (sentryId.toString().startsWith("0000000")) {
+        logger.info("Sentry is not configured!");
+      }
+      logger.info("Logging error with sentry id {}", sentryId);
     } catch (Exception e) {
       logger.error("handle: Cannot send to sentry!", e);
     }
   }
 
   private SentryEvent buildEvent(Http.RequestHeader request, UsefulException usefulException, List<Breadcrumb> breadcrumbs) {
-    SentryEvent evt = new SentryEvent(usefulException);
+    SentryEvent evt = new SentryEvent(usefulException.getCause());
     evt.setFingerprints(Collections.singletonList(usefulException.id));
     evt.setLogger(getClass().getName());
     evt.setTag("host", request.host());

@@ -155,27 +155,3 @@ Backtraces are sent by querying the `LogEntryFinder` for log entries matching th
 The `HoneycombHandler` uses the [event API](https://docs.honeycomb.io/api/events/) through [terse-logback honeycomb client](https://tersesystems.com/blog/2019/08/22/tracing-with-logback-and-honeycomb/).  
 
 All errors are sent in as traces to Honeycomb using [manual tracing](https://docs.honeycomb.io/working-with-your-data/tracing/send-trace-data/#manual-tracing), with the error as the root span.  Backtraces are sent by sending [span events](https://docs.honeycomb.io/working-with-your-data/tracing/send-trace-data/#span-events), since log entries do not have a duration in themselves.
-
-## JMX Support
-
-You can change the logging level at runtime through [JMX](https://docs.oracle.com/javase/tutorial/jmx/overview/index.html) with [JMXConfigurator](http://logback.qos.ch/manual/jmxConfig.html) but it is a single bean that requires you to enter the logger and level as arguments.  Instead, the showcase demos a logger bean for each component that allows you to change the level alone.
-
-Most of the boilerplate is under the hood, so you can extend a controller and call [registerWithJMX](https://github.com/tersesystems/terse-logback-showcase/blob/master/app/controllers/AbstractController.java#L38) to show and change the logger for that controller in JMX.
-
-A full description is [here](https://tersesystems.com/blog/2019/12/24/controlling-logging-in-a-running-jvm/) -- the blog post goes into the implementation and also how to work with JMX over HTTP using Jolokia.
-
-There are three main options to connect through JMX: [Zulu Mission Control](https://www.azul.com/products/zulu-mission-control/), [VisualVM](https://visualvm.github.io/), and [Hawt](https://hawt.io/).
-
-### Zulu Mission Control
-
-[Zulu Mission Control](https://www.azul.com/products/zulu-mission-control/) is a rebranded version of Java Mission Control.  MBeans functionality is out of the box.
-
-### VisualVM
-
-[VisualVM](https://visualvm.github.io/) is a tool for profiling and monitoring the JDK.  The MBean support is available [as a plugin](https://visualvm.github.io/plugins.html).
-
-TabularData is rendered a little differently than in Zulu Mission Control.
-
-### Hawt
-
-[Hawt](https://hawt.io/) is an application server that connects to Jolokia and gives an HTML admin UI.  You will need to install Jolokia as a Java agent and run Play in production mode for this to work.  See https://github.com/wsargent/play-scala-with-jmx for an example of how to do this.

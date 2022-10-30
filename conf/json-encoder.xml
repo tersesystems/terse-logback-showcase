@@ -25,7 +25,7 @@
             <logLevel/>
             <logLevelValue/><!-- numeric value is useful for filtering >= -->
             <stackHash/>
-            <mdc/>
+            <mdc/> <!-- request_id will be added here  -->
             <logstashMarkers/>
             <arguments/>
 

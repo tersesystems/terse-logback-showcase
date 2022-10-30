@@ -13,6 +13,9 @@ import play.mvc.Result;
 import javax.inject.Inject;
 import java.util.concurrent.CompletionStage;
 
+import static logging.Constants.REQUEST_ID;
+
+// https://www.playframework.com/documentation/2.8.x/JavaActionsComposition
 public abstract class AbstractController extends Controller {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -25,7 +28,8 @@ public abstract class AbstractController extends Controller {
 
         public CompletionStage<Result> call(Http.Request request) {
             try {
-                MDC.put("correlation_id", Long.toString(request.id()));
+                // Always set request id in MDC for every action we want logging on
+                MDC.put(REQUEST_ID, Long.toString(request.id()));
                 return delegate.call(request).handle((result, e) -> {
                     SpanInfo spanInfo = utils.createRootSpan(request);
                     int status = e == null ? result.status() : 500;

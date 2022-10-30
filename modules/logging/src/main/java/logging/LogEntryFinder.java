@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.db.Database;
 import play.db.NamedDatabase;
-import play.inject.ApplicationLifecycle;
 import play.libs.Json;
 
 import javax.inject.Inject;
@@ -21,26 +20,36 @@ import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static logging.Constants.REQUEST_ID;
 
+/**
+ * A standalone component that queries a database and returns LogEntry.
+ */
 @Singleton
 public class LogEntryFinder {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final Database db;
-    private final Config config;
     private final LoggingExecutionContext executionContext;
     private final int pageSize;
+
+    private final String queryStatement;
+    private final String requestStatement;
+    private final String idStatement;
 
     @Inject
     public LogEntryFinder(@NamedDatabase("logging") Database db,
                           Config config,
                           LoggingExecutionContext executionContext) {
         this.db = db;
-        this.config = config;
         this.executionContext = executionContext;
         this.pageSize = 20;
+        this.queryStatement = config.getString("logging.sql.queryStatement");
+        this.idStatement = config.getString("logging.sql.idStatement");
+        this.requestStatement = config.getString("logging.sql.requestStatement");
     }
 
     public CompletionStage<List<LogEntry>> list(Integer offset) {
+        // run the DB query in an IO execution context
         return supplyAsync(
                 () -> {
                     try (Connection conn = db.getConnection()) {
@@ -54,7 +63,7 @@ public class LogEntryFinder {
     }
 
     private List<LogEntry> list(Connection conn, int limit, int offset) throws SQLException {
-        try (PreparedStatement ps = conn.prepareStatement(getQueryStatement())) {
+        try (PreparedStatement ps = conn.prepareStatement(queryStatement)) {
             ps.setInt(1, limit);
             ps.setInt(2, offset);
             try (ResultSet rs = ps.executeQuery()) {
@@ -68,15 +77,16 @@ public class LogEntryFinder {
         }
     }
 
-    public CompletionStage<List<LogEntry>> findByCorrelation(String correlationId) {
-        return findByCorrelation(correlationId, pageSize);
+    public CompletionStage<List<LogEntry>> findByRequestId(String requestId) {
+        return findByRequestId(requestId, pageSize);
     }
 
-    public CompletionStage<List<LogEntry>> findByCorrelation(String correlationId, int limit) {
+    public CompletionStage<List<LogEntry>> findByRequestId(String requestId, int limit) {
+        // run the DB query in an IO execution context
         return supplyAsync(
                 () -> {
                     try (Connection conn = db.getConnection()) {
-                        return findByCorrelation(conn, correlationId, limit, 0);
+                        return findByRequestId(conn, requestId, limit, 0);
                     } catch (SQLException e) {
                         logger.error("Cannot query database", e);
                     }
@@ -86,6 +96,7 @@ public class LogEntryFinder {
     }
 
     public CompletionStage<Optional<LogEntry>> findById(String ts) {
+        // run the DB query in an IO execution context
         return supplyAsync(() -> {
             try (Connection conn = db.getConnection()) {
                 return findById(conn, ts);
@@ -98,7 +109,7 @@ public class LogEntryFinder {
     }
 
     private Optional<LogEntry> findById(Connection conn, String eventId) throws SQLException {
-        try (PreparedStatement ps = conn.prepareStatement(byIdStatement())) {
+        try (PreparedStatement ps = conn.prepareStatement(idStatement)) {
             ps.setString(1, eventId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -110,8 +121,8 @@ public class LogEntryFinder {
         }
     }
 
-    private List<LogEntry> findByCorrelation(Connection conn, String correlationId, int limit, int offset) throws SQLException {
-        try (PreparedStatement ps = conn.prepareStatement(byCorrelationIdStatement())) {
+    private List<LogEntry> findByRequestId(Connection conn, String correlationId, int limit, int offset) throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement(requestStatement)) {
             ps.setString(1, correlationId);
             ps.setInt(2, limit);
             ps.setInt(3, offset);
@@ -136,21 +147,10 @@ public class LogEntryFinder {
         JsonNode json = Json.parse(evt);
         Long relativeNanos = json.path("relative_ns").asLong();
         String message = json.path("message").asText("");
-        String requestId = json.path("correlation_id").asText();
+        String requestId = json.path(REQUEST_ID).asText();
         String loggerName = json.path("logger_name").asText("");
         String uniqueId = rs.getString("event_id");
         return new LogEntry(ts, relativeNanos, level, requestId, message, loggerName, evt, uniqueId);
     }
 
-    private String getQueryStatement() {
-        return config.getString("logging.sql.queryStatement");
-    }
-
-    private String byIdStatement() {
-        return config.getString("logging.sql.byIdStatement");
-    }
-
-    private String byCorrelationIdStatement() {
-        return config.getString("logging.sql.byCorrelationIdStatement");
-    }
 }

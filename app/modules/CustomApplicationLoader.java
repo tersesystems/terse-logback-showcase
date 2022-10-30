@@ -13,6 +13,13 @@ import play.inject.guice.GuiceApplicationLoader;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * An application loader that swaps out the request factory to
+ * use StartTimeRequestFactory.
+ *
+ * We need to use the app loader rather than the module because
+ * the error handler is special, see inline for details.
+ */
 public class CustomApplicationLoader extends GuiceApplicationLoader {
 
   @Override

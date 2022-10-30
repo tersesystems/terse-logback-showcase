@@ -7,6 +7,9 @@ import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
 
+/**
+ * A stand alone component that represents log entries in a database.
+ */
 public class LogEntry {
     private final Instant timestamp;
     private final Long relativeNanos;

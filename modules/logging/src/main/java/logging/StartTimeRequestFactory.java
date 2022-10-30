@@ -11,6 +11,10 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.time.Instant;
 
+/**
+ * A request factory that records the start time of the request from
+ * creation.  This helps with honeycomb tracing.
+ */
 @Singleton
 public class StartTimeRequestFactory extends DefaultRequestFactory {
 
