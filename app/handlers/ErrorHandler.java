@@ -66,7 +66,7 @@ public class ErrorHandler extends play.http.DefaultHttpErrorHandler {
             // Log the error itself...
             SpanInfo rootSpan = utils.createRootSpan(request);
             Marker marker = utils.createMarker(rootSpan, request, 500);
-            logger.error(marker, "Internal server error for ({}}) [{}}]", request.method(), request.uri(), usefulException);
+            logger.error(marker, "Internal server error for ({}) [{}]", request.method(), request.uri(), usefulException.getCause());
 
             handleBacktraces(rootSpan, request, usefulException);
         } finally {

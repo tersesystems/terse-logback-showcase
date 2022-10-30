@@ -29,7 +29,7 @@ public class Utils {
     private final String team;
     private final boolean honeycombEnabled;
     private final boolean sentryEnabled;
-    private boolean filesEnabled;
+    private final boolean filesEnabled;
 
     @Inject
     public Utils(Config config) {

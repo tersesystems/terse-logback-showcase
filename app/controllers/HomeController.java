@@ -1,22 +1,13 @@
 package controllers;
 
-import logging.jmx.JMXServer;
 import play.mvc.Result;
 import play.mvc.With;
-
-import javax.inject.Inject;
-import javax.management.MalformedObjectNameException;
 
 /**
  * This controller contains an action to handle HTTP requests
  * to the application's home page.
  */
 public class HomeController extends AbstractController {
-
-    @Inject
-    public HomeController(JMXServer jmxServer) throws MalformedObjectNameException {
-        super(jmxServer);
-    }
 
     public Result index() {
         return ok(views.html.index.render());

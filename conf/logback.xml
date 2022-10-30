@@ -1,0 +1,130 @@
+<configuration  >
+
+    <!-- loosen rule to include for encoders as well as just top level -->
+    <newRule pattern="*/include"
+             actionClass="ch.qos.logback.core.joran.action.IncludeAction"/>
+
+    <!-- loosen the rule on appender refs so appenders can reference them -->
+    <newRule pattern="*/appender/appender-ref"
+             actionClass="ch.qos.logback.core.joran.action.AppenderRefAction"/>
+
+    <!-- loosen the rule on appender refs so turbo filters can reference them -->
+    <newRule pattern="configuration/turboFilter/appender-ref"
+             actionClass="ch.qos.logback.core.joran.action.AppenderRefAction"/>
+
+    <newRule pattern="*/typesafeConfig"
+             actionClass="com.tersesystems.logback.typesafeconfig.TypesafeConfigAction"/>
+
+    <newRule pattern="*/setLoggerLevels"
+             actionClass="com.tersesystems.logback.classic.SetLoggerLevelsAction"/>
+
+    <typesafeConfig>
+        <object name="highlightMap" path="highlight" scope="context"/>
+    </typesafeConfig>
+
+    <jmxConfigurator />
+
+    <!-- give the async appenders time to shutdown -->
+    <shutdownHook class="ch.qos.logback.core.hook.DelayingShutdownHook">
+        <delay>${shutdownHook.delay}</delay>
+    </shutdownHook>
+
+    <!-- highlight based on context map -->
+    <conversionRule conversionWord="terseHighlight" converterClass="com.tersesystems.logback.classic.TerseHighlightConverter" />
+
+    <conversionRule conversionWord="startTime" converterClass="com.tersesystems.logback.classic.StartTimeConverter" />
+
+    <conversionRule conversionWord="nanoTime"
+                    converterClass="com.tersesystems.logback.classic.NanoTimeConverter" />
+
+    <!-- time since epoch -->
+    <conversionRule conversionWord="tse" converterClass="com.tersesystems.logback.classic.TimeSinceEpochConverter" />
+
+    <!-- nested exception messages -->
+    <conversionRule conversionWord="exmessage" converterClass="com.tersesystems.logback.classic.ExceptionMessageConverter" />
+
+    <!-- unique id extractor -->
+    <conversionRule conversionWord="uniqueId" converterClass="com.tersesystems.logback.uniqueid.UniqueIdConverter" />
+
+    <!--
+    https://github.com/logstash/logstash-logback-encoder/blob/master/src/main/java/net/logstash/logback/stacktrace/ShortenedThrowableConverter.java#L58
+
+    Options can be specified in the pattern in the following order:
+       - maxDepthPerThrowable = "full" or "short" or an integer value
+       - shortenedClassNameLength = "full" or "short" or an integer value
+       - maxLength = "full" or "short" or an integer value
+
+       %msg%n%stack{5,1024,10,rootFirst,regex1,regex2,evaluatorName}
+    -->
+    <conversionRule conversionWord="stack" converterClass="net.logstash.logback.stacktrace.ShortenedThrowableConverter" />
+
+    <appender name="ASYNC" class="net.logstash.logback.appender.LoggingEventAsyncDisruptorAppender">
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+                <level>${console.threshold}</level>
+            </filter>
+
+            <encoder>
+                <pattern>${encoders.short.pattern}</pattern>
+            </encoder>
+            <withJansi>${console.withJansi}</withJansi>
+        </appender>
+
+        <appender name="ASYNC_JSONFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+                <level>${jsonfile.threshold}</level>
+            </filter>
+
+            <file>${jsonfile.location}</file>
+            <append>${jsonfile.append}</append>
+
+            <!--
+              This quadruples logging throughput (in theory) https://logback.qos.ch/manual/appenders.html#FileAppender
+             -->
+            <immediateFlush>${jsonfile.immediateFlush}</immediateFlush>
+
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <fileNamePattern>${jsonfile.rollingPolicy.fileNamePattern}</fileNamePattern>
+                <maxHistory>${jsonfile.rollingPolicy.maxHistory}</maxHistory>
+            </rollingPolicy>
+
+            <include resource="json-encoder.xml"/>
+        </appender>
+
+        <appender name="ASYNC_TEXTFILE" class="ch.qos.logback.core.FileAppender">
+            <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+                <level>${textfile.threshold}</level>
+            </filter>
+            <file>${textfile.location}</file>
+            <append>${textfile.append}</append>
+
+            <!--
+              This quadruples logging throughput (in theory) https://logback.qos.ch/manual/appenders.html#FileAppender
+             -->
+            <immediateFlush>${textfile.immediateFlush}</immediateFlush>
+            <encoder>
+                <pattern>${encoders.detailed.pattern}</pattern>
+                <outputPatternAsHeader>${encoders.detailed.outputPatternAsHeader}</outputPatternAsHeader>
+            </encoder>
+        </appender>
+    </appender>
+
+    <appender name="BLACKLITE" class="com.tersesystems.blacklite.logback.BlackliteAppender">
+        <file>${blacklite.file}</file>
+
+        <include resource="json-encoder.xml"/>
+    </appender>
+
+    <root>
+        <appender class="com.tersesystems.logback.uniqueid.UniqueIdComponentAppender">
+            <appender class="com.tersesystems.logback.classic.NanoTimeComponentAppender">
+                <appender-ref ref="ASYNC"/>
+                <appender-ref ref="BLACKLITE"/>
+            </appender>
+        </appender>
+    </root>
+
+    <!-- Set the logger levels at the very end -->
+    <setLoggerLevels/>
+
+</configuration>
