@@ -15,16 +15,24 @@ lazy val logging = (project in file("modules/logging")).settings(
   libraryDependencies += "org.codehaus.janino" % "janino" % "3.1.8",
   libraryDependencies += "org.fusesource.jansi" % "jansi" % "2.4.0",
 
+  // https://docs.sentry.io/platforms/java/usage/
   libraryDependencies += "io.sentry" % "sentry" % "6.6.0",
 
+  // https://github.com/tersesystems/blacklite/
   libraryDependencies += "com.tersesystems.blacklite" % "blacklite-logback" % "1.2.2",
 
+  // https://tersesystems.github.io/terse-logback/1.1.0/guide/instrumentation/
   libraryDependencies += "com.tersesystems.logback" % "logback-bytebuddy" % terseLogback,
-  libraryDependencies += "com.tersesystems.logback" % "logback-honeycomb-okhttp" % terseLogback,
-  libraryDependencies += "com.tersesystems.logback" % "logback-turbomarker" % terseLogback,
+
+  // https://tersesystems.github.io/terse-logback/1.1.0/guide/typesafeconfig/
   libraryDependencies += "com.tersesystems.logback" % "logback-typesafe-config" % terseLogback,
+
+  // https://tersesystems.github.io/terse-logback/1.1.0/guide/uniqueid/
   libraryDependencies += "com.tersesystems.logback" % "logback-uniqueid-appender" % terseLogback,
-  libraryDependencies += "com.tersesystems.logback" % "logback-tracing" % terseLogback
+
+  // https://tersesystems.github.io/terse-logback/1.1.0/guide/tracing/
+  libraryDependencies += "com.tersesystems.logback" % "logback-tracing" % terseLogback,
+  libraryDependencies += "com.tersesystems.logback" % "logback-honeycomb-okhttp" % terseLogback
 )
 
 lazy val root = (project in file(".")).enablePlugins(PlayJava, JavaAgent).settings(
