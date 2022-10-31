@@ -1,10 +1,10 @@
 @import play.libs.Scala._
 
-@(list: Seq[_root_.logging.LogEntry], correlationId: Option[String], nextPage: Int)
+@(list: Seq[_root_.logging.LogEntry], requestId: Option[String], nextPage: Int)
 
 @main("Logs") {
-  <h1>Logs @correlationId.map{ cid =>
-    (showing only correlation id @cid)
+  <h1>Logs @requestId.map{ cid =>
+    (showing only request id @cid)
   }
   </h1>
   <p style="text-align: right; padding-right: 50px;">
@@ -19,7 +19,7 @@
         <th data-type="text-short">Relative NS <span class="resize-handle"></span></th>
         <th data-type="text-short">Level <span class="resize-handle"></span></th>
         <th data-type="text-short">Logger <span class="resize-handle"></span></th>
-        <th data-type="text-short">Correlation ID <span class="resize-handle"></span></th>
+        <th data-type="text-short">Request ID <span class="resize-handle"></span></th>
         <th data-type="text-message">Message <span class="resize-handle"></span></th>
       </tr>
     </thead>
@@ -33,7 +33,7 @@
       <td>@e.loggerName</td>
       <td>
         @Option(e.requestId.orElse(null)).map { id =>
-          <a href="@routes.LogController.correlation(id)">@id</a>
+          <a href="@routes.LogController.request(id)">@id</a>
         }
       </td>
       <td>@e.message</td>

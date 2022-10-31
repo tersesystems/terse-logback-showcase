@@ -43,8 +43,9 @@
 </p>
 
 <p id="detail2">
-  You can see the logs for this request at <a href="@routes.LogController.correlation(request.id.toString)">this page</a>.
+  You can see the logs for this request at <a href="@routes.LogController.request(_root_.logging.ID.get(request))">this page</a>.
 </p>
+
 
 </body>
 </html>

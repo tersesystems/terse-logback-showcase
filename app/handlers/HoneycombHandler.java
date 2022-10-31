@@ -6,6 +6,7 @@ import com.tersesystems.logback.honeycomb.client.HoneycombClient;
 import com.tersesystems.logback.honeycomb.client.HoneycombRequest;
 import com.tersesystems.logback.honeycomb.client.HoneycombResponse;
 import com.tersesystems.logback.tracing.SpanInfo;
+import logging.ID;
 import logging.LogEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,14 +39,21 @@ public class HoneycombHandler {
     }
 
     void handle(SpanInfo spanInfo, Duration spanDuration, List<? extends LogEntry> rows, Http.RequestHeader request, UsefulException usefulException) {
+        logger.info("handle: calling honeycomb for request {}", ID.get(request));
+
         HoneycombRequest<JsonNode> spanRequest = createSpanRequest(spanInfo, spanDuration, request, usefulException);
         CompletionStage<HoneycombResponse> f = honeycombClient.post(spanRequest);
-        f.thenAccept(response -> {
-            if (response != null && response.isSuccess()) {
-                logger.debug("handle: Successful post of event = " + response.toString());
-                postBackTraces(rows, spanInfo);
-            } else {
-                logger.error("handle: Bad honeycomb response {}", response != null ? response.toString() : null);
+        f.whenComplete((response, e) -> {
+            if (response != null) {
+                if (response.isSuccess()) {
+                    logger.info("handle: Successful post to honeycomb of event {}", response);
+                    postBackTraces(rows, spanInfo);
+                } else {
+                    logger.error("handle: Bad honeycomb response {}", response);
+                }
+            }
+            if (e != null) {
+                logger.error("Operation failed", e);
             }
         });
     }
@@ -67,7 +75,7 @@ public class HoneycombHandler {
         node.set("duration_ms", Json.toJson(spanDuration.toMillis()));
 
         // Extra fields for more context
-        node.set("correlation_id", Json.toJson(Long.toString(request.id())));
+        node.set("request_id", Json.toJson(ID.get(request)));
         node.set("@timestamp", Json.toJson(spanInfo.startTime()));
         node.set("request.method", Json.toJson(request.method()));
         node.set("request.uri", Json.toJson(request.uri()));

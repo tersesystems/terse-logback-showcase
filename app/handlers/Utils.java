@@ -16,12 +16,14 @@ import play.libs.Json;
 import play.mvc.Http;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 
+@Singleton
 public class Utils {
-    
+
     private final IdGenerator idgen = new RandomUUIDIdGenerator();
     private final SpanMarkerFactory spanMarkerFactory = new SpanMarkerFactory();
     private final String serviceName;
@@ -76,15 +78,9 @@ public class Utils {
         SpanInfo.Builder spanBuilder = SpanInfo.builder();
         spanBuilder.setRootSpan(idgen::generateId, request.toString());
         spanBuilder.setServiceName(serviceName);
-        Optional<Instant> startTime = RequestStartTime.get(request);
-        if (startTime.isPresent()) {
-            Instant st = startTime.get();
-            spanBuilder.setStartTime(st);
-            spanBuilder.setDurationSupplier(() -> Duration.between(st, Instant.now()));
-        } else {
-            //logger.warn("createRootSpan: request {} doesn't have startTime attribute!", request);
-            spanBuilder.startNow();
-        }
+        Instant st = RequestStartTime.get(request);
+        spanBuilder.setStartTime(st);
+        spanBuilder.setDurationSupplier(() -> Duration.between(st, Instant.now()));
 
         return spanBuilder.build();
     }

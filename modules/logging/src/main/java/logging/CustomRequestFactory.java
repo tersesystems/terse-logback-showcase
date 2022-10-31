@@ -1,5 +1,7 @@
 package logging;
 
+import com.tersesystems.logback.uniqueid.IdGenerator;
+import com.tersesystems.logback.uniqueid.RandomUUIDIdGenerator;
 import play.api.http.HttpConfiguration;
 import play.api.libs.typedmap.TypedMap;
 import play.api.mvc.*;
@@ -16,14 +18,18 @@ import java.time.Instant;
  * creation.  This helps with honeycomb tracing.
  */
 @Singleton
-public class StartTimeRequestFactory extends DefaultRequestFactory {
+public class CustomRequestFactory extends DefaultRequestFactory {
+
+    private final IdGenerator idgen = new RandomUUIDIdGenerator();
 
     @Inject
-    public StartTimeRequestFactory(CookieHeaderEncoding cookieHeaderEncoding, SessionCookieBaker sessionBaker, FlashCookieBaker flashBaker) {
+    public CustomRequestFactory(CookieHeaderEncoding cookieHeaderEncoding,
+                                SessionCookieBaker sessionBaker,
+                                FlashCookieBaker flashBaker) {
         super(cookieHeaderEncoding, sessionBaker, flashBaker);
     }
 
-    public StartTimeRequestFactory(HttpConfiguration config) {
+    public CustomRequestFactory(HttpConfiguration config) {
         super(config);
     }
 
@@ -35,6 +41,7 @@ public class StartTimeRequestFactory extends DefaultRequestFactory {
                                              Headers headers,
                                              TypedMap attrs) {
         return super.createRequestHeader(connection, method, target, version, headers, attrs)
-                .addAttr(Attrs.START_TIME.asScala(), Instant.now());
+                .addAttr(Attrs.START_TIME.asScala(), Instant.now())
+                .addAttr(Attrs.ID.asScala(), idgen.generateId());
     }
 }

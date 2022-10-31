@@ -10,8 +10,8 @@ import java.util.Optional;
  */
 public class RequestStartTime {
 
-    public static Optional<Instant> get(Http.RequestHeader request) {
-        return request.attrs().getOptional(Attrs.START_TIME);
+    public static Instant get(Http.RequestHeader request) {
+        return request.attrs().get(Attrs.START_TIME);
     }
 
 

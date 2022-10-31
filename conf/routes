@@ -6,7 +6,7 @@ GET     /flaky                      controllers.HomeController.flaky()
 GET     /log                       controllers.LogController.list(page: Int ?= 1)
 GET     /log/:id                   controllers.LogController.show(id: String)
 
-GET     /log/correlation/:cid           controllers.LogController.correlation(cid: String, page: Int ?= 1)
+GET     /log/request/:rid           controllers.LogController.request(rid: String, page: Int ?= 1)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

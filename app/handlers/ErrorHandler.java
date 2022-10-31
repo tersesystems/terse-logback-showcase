@@ -2,6 +2,7 @@ package handlers;
 
 import com.tersesystems.logback.tracing.SpanInfo;
 import com.typesafe.config.Config;
+import logging.ID;
 import logging.LogEntryFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +65,7 @@ public class ErrorHandler extends play.http.DefaultHttpErrorHandler {
     protected void logServerError(Http.RequestHeader request, UsefulException usefulException) {
         try {
             // Make sure request_id exists in MDC before logging the error
-            MDC.put(REQUEST_ID, request.id().toString());
+            MDC.put(REQUEST_ID, ID.get(request));
 
             // Log the error itself...
             SpanInfo rootSpan = utils.createRootSpan(request);
@@ -79,19 +80,21 @@ public class ErrorHandler extends play.http.DefaultHttpErrorHandler {
 
     protected CompletionStage<Result> onProdServerError(
             Http.RequestHeader request, UsefulException exception) {
+        // override so it doesn't go to views.html.defaultpages.error.render
         return CompletableFuture.completedFuture(
                 Results.internalServerError(
                         views.html.error.render(exception, request.asScala())));
     }
     protected CompletionStage<Result> onDevServerError(
             Http.RequestHeader request, UsefulException exception) {
+        // override so it doesn't go to views.html.defaultpages.devError.render
         return CompletableFuture.completedFuture(
                 Results.internalServerError(
                         views.html.devError.render(Option.empty(), exception, request.asScala())));
     }
 
     private void handleBacktraces(SpanInfo spanInfo, Http.RequestHeader request, UsefulException usefulException) {
-        String requestId = Long.toString(request.id());
+        String requestId = ID.get(request);
         Duration spanDuration = spanInfo.duration(); // freeze this so it's not affected by delay
 
         // Delay for a second so the queue can clear to the appender.

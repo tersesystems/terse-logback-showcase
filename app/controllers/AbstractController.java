@@ -2,6 +2,7 @@ package controllers;
 
 import com.tersesystems.logback.tracing.SpanInfo;
 import handlers.Utils;
+import logging.ID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -29,7 +30,7 @@ public abstract class AbstractController extends Controller {
         public CompletionStage<Result> call(Http.Request request) {
             try {
                 // Always set request id in MDC for every action we want logging on
-                MDC.put(REQUEST_ID, Long.toString(request.id()));
+                MDC.put(REQUEST_ID, ID.get(request));
                 return delegate.call(request).handle((result, e) -> {
                     SpanInfo spanInfo = utils.createRootSpan(request);
                     int status = e == null ? result.status() : 500;
