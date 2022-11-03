@@ -42,10 +42,12 @@ public class HoneycombHandler {
         logger.info("handle: calling honeycomb for request {}", ID.get(request));
 
         HoneycombRequest<JsonNode> spanRequest = createSpanRequest(spanInfo, spanDuration, request, usefulException);
-        CompletionStage<HoneycombResponse> f = honeycombClient.post(spanRequest);
-        f.whenComplete((response, e) -> {
-            if (response != null) {
-                if (response.isSuccess()) {
+        final List<HoneycombRequest<JsonNode>> honeycombRequests = Arrays.asList(spanRequest);
+        CompletionStage<List<HoneycombResponse>> f = honeycombClient.postBatch(honeycombRequests);
+        f.whenComplete((responses, e) -> {
+            if (responses != null) {
+                HoneycombResponse response = responses.get(0);
+                if (responses.get(0).isSuccess()) {
                     logger.info("handle: Successful post to honeycomb of event {}", response);
                     postBackTraces(rows, spanInfo);
                 } else {

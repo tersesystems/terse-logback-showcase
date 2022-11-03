@@ -1,4 +1,4 @@
-<configuration  >
+<configuration>
 
     <!-- loosen rule to include for encoders as well as just top level -->
     <newRule pattern="*/include"
@@ -6,10 +6,6 @@
 
     <!-- loosen the rule on appender refs so appenders can reference them -->
     <newRule pattern="*/appender/appender-ref"
-             actionClass="ch.qos.logback.core.joran.action.AppenderRefAction"/>
-
-    <!-- loosen the rule on appender refs so turbo filters can reference them -->
-    <newRule pattern="configuration/turboFilter/appender-ref"
              actionClass="ch.qos.logback.core.joran.action.AppenderRefAction"/>
 
     <newRule pattern="*/typesafeConfig"
@@ -58,58 +54,58 @@
     -->
     <conversionRule conversionWord="stack" converterClass="net.logstash.logback.stacktrace.ShortenedThrowableConverter" />
 
-    <appender name="ASYNC" class="net.logstash.logback.appender.LoggingEventAsyncDisruptorAppender">
-        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-            <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-                <level>${console.threshold}</level>
-            </filter>
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${console.threshold}</level>
+        </filter>
 
-            <encoder>
-                <pattern>${encoders.short.pattern}</pattern>
-            </encoder>
-            <withJansi>${console.withJansi}</withJansi>
-        </appender>
+        <encoder>
+            <pattern>${encoders.short.pattern}</pattern>
+        </encoder>
+        <withJansi>${console.withJansi}</withJansi>
+    </appender>
 
-        <appender name="ASYNC_JSONFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-            <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-                <level>${jsonfile.threshold}</level>
-            </filter>
+    <appender name="ASYNC_JSONFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${jsonfile.threshold}</level>
+        </filter>
 
-            <file>${jsonfile.location}</file>
-            <append>${jsonfile.append}</append>
+        <file>${jsonfile.location}</file>
+        <append>${jsonfile.append}</append>
 
-            <!--
-              This quadruples logging throughput (in theory) https://logback.qos.ch/manual/appenders.html#FileAppender
-             -->
-            <immediateFlush>${jsonfile.immediateFlush}</immediateFlush>
+        <!--
+          This quadruples logging throughput (in theory) https://logback.qos.ch/manual/appenders.html#FileAppender
+         -->
+        <immediateFlush>${jsonfile.immediateFlush}</immediateFlush>
 
-            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-                <fileNamePattern>${jsonfile.rollingPolicy.fileNamePattern}</fileNamePattern>
-                <maxHistory>${jsonfile.rollingPolicy.maxHistory}</maxHistory>
-            </rollingPolicy>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${jsonfile.rollingPolicy.fileNamePattern}</fileNamePattern>
+            <maxHistory>${jsonfile.rollingPolicy.maxHistory}</maxHistory>
+        </rollingPolicy>
 
-            <include resource="json-encoder.xml"/>
-        </appender>
+        <include resource="json-encoder.xml"/>
+    </appender>
 
-        <appender name="ASYNC_TEXTFILE" class="ch.qos.logback.core.FileAppender">
-            <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-                <level>${textfile.threshold}</level>
-            </filter>
-            <file>${textfile.location}</file>
-            <append>${textfile.append}</append>
+    <appender name="ASYNC_TEXTFILE" class="ch.qos.logback.core.FileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${textfile.threshold}</level>
+        </filter>
+        <file>${textfile.location}</file>
+        <append>${textfile.append}</append>
 
-            <!--
-              This quadruples logging throughput (in theory) https://logback.qos.ch/manual/appenders.html#FileAppender
-             -->
-            <immediateFlush>${textfile.immediateFlush}</immediateFlush>
-            <encoder>
-                <pattern>${encoders.detailed.pattern}</pattern>
-                <outputPatternAsHeader>${encoders.detailed.outputPatternAsHeader}</outputPatternAsHeader>
-            </encoder>
-        </appender>
+        <!--
+          This quadruples logging throughput (in theory) https://logback.qos.ch/manual/appenders.html#FileAppender
+         -->
+        <immediateFlush>${textfile.immediateFlush}</immediateFlush>
+        <encoder>
+            <pattern>${encoders.detailed.pattern}</pattern>
+            <outputPatternAsHeader>${encoders.detailed.outputPatternAsHeader}</outputPatternAsHeader>
+        </encoder>
     </appender>
 
     <appender name="BLACKLITE" class="com.tersesystems.blacklite.logback.BlackliteAppender">
+        <!-- nested doesn't set name as attribute? -->
+        <!-- <name>BLACKLITE</name> -->
         <file>${blacklite.file}</file>
 
         <include resource="json-encoder.xml"/>
@@ -118,7 +114,11 @@
     <root>
         <appender class="com.tersesystems.logback.uniqueid.UniqueIdComponentAppender">
             <appender class="com.tersesystems.logback.classic.NanoTimeComponentAppender">
-                <appender-ref ref="ASYNC"/>
+                <appender class="net.logstash.logback.appender.LoggingEventAsyncDisruptorAppender">
+                    <appender-ref ref="CONSOLE"/>
+                    <appender-ref ref="ASYNC_JSONFILE"/>
+                    <appender-ref ref="ASYNC_TEXTFILE"/>
+                </appender>
                 <appender-ref ref="BLACKLITE"/>
             </appender>
         </appender>

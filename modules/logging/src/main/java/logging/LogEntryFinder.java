@@ -5,18 +5,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.typesafe.config.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import play.db.Database;
-import play.db.NamedDatabase;
+import org.sqlite.SQLiteConfig;
 import play.libs.Json;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.sql.*;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletionStage;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
@@ -28,7 +24,7 @@ import static logging.Constants.REQUEST_ID;
 @Singleton
 public class LogEntryFinder {
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final Database db;
+    private final String url;
     private final LoggingExecutionContext executionContext;
     private final int pageSize;
 
@@ -37,10 +33,9 @@ public class LogEntryFinder {
     private final String idStatement;
 
     @Inject
-    public LogEntryFinder(@NamedDatabase("logging") Database db,
-                          Config config,
+    public LogEntryFinder(Config config,
                           LoggingExecutionContext executionContext) {
-        this.db = db;
+        this.url = config.getString("logging.url");
         this.executionContext = executionContext;
         this.pageSize = 20;
         this.queryStatement = config.getString("logging.sql.queryStatement");
@@ -48,11 +43,20 @@ public class LogEntryFinder {
         this.requestStatement = config.getString("logging.sql.requestStatement");
     }
 
+    Connection getConnection() throws SQLException {
+        SQLiteConfig config = new SQLiteConfig();
+        config.setReadOnly(true);
+        config.setJournalMode(SQLiteConfig.JournalMode.WAL);
+        config.setBusyTimeout(1000);
+        Connection conn = config.createConnection(url);
+        return conn;
+    }
+
     public CompletionStage<List<LogEntry>> list(Integer offset) {
         // run the DB query in an IO execution context
         return supplyAsync(
                 () -> {
-                    try (Connection conn = db.getConnection()) {
+                    try (Connection conn = getConnection()) {
                         return list(conn, pageSize, offset);
                     } catch (SQLException e) {
                         logger.error("Cannot query database", e);
@@ -85,7 +89,7 @@ public class LogEntryFinder {
         // run the DB query in an IO execution context
         return supplyAsync(
                 () -> {
-                    try (Connection conn = db.getConnection()) {
+                    try (Connection conn = getConnection()) {
                         return findByRequestId(conn, requestId, limit, 0);
                     } catch (SQLException e) {
                         logger.error("Cannot query database", e);
@@ -98,7 +102,7 @@ public class LogEntryFinder {
     public CompletionStage<Optional<LogEntry>> findById(String ts) {
         // run the DB query in an IO execution context
         return supplyAsync(() -> {
-            try (Connection conn = db.getConnection()) {
+            try (Connection conn = getConnection()) {
                 return findById(conn, ts);
             } catch (SQLException e) {
                 logger.error("Cannot query database", e);

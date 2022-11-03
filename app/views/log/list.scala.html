@@ -3,7 +3,7 @@
 @(list: Seq[_root_.logging.LogEntry], requestId: Option[String], nextPage: Int)
 
 @main("Logs") {
-  <h1>Logs @requestId.map{ cid =>
+  <h1><a href="@routes.LogController.list(1)">Logs</a> @requestId.map{ cid =>
     (showing only request id @cid)
   }
   </h1>

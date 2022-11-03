@@ -35,7 +35,6 @@
                 -->
                 <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
                     <rootCauseFirst>${encoders.json.shortenedThrowableConverter.rootCauseFirst}</rootCauseFirst>
-                    <inlineHash>${encoders.json.shortenedThrowableConverter.inlineHash}</inlineHash>
                 </throwableConverter>
             </stackTrace>
         </providers>

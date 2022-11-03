@@ -1,3 +1,4 @@
+import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -5,10 +6,12 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.tersesystems.logback.honeycomb.client.HoneycombClient;
 import com.tersesystems.logback.honeycomb.client.HoneycombRequest;
-import com.tersesystems.logback.honeycomb.okhttp.HoneycombOkHTTPClientService;
+import com.tersesystems.logback.honeycomb.okhttp.HoneycombOkHTTPClient;
 import com.typesafe.config.Config;
+import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
+import org.slf4j.Logger;
 import play.Environment;
-import play.api.libs.json.Json;
 import play.inject.Binding;
 
 import javax.inject.Inject;
@@ -24,6 +27,8 @@ public class Module extends play.inject.Module {
   }
 
   static class HoneycombProvider implements Provider<HoneycombClient> {
+
+    private static final Logger logger = org.slf4j.LoggerFactory.getLogger("okhttp3.logging.HttpLoggingInterceptor");
 
     private final HoneycombClient<JsonNode> client;
 
@@ -46,8 +51,16 @@ public class Module extends play.inject.Module {
           throw new RuntimeException(e);
         }
       };
-      final HoneycombOkHTTPClientService service = new HoneycombOkHTTPClientService();
-      this.client = service.newClient(writeKey, dataSet, defaultEncodeFunction);
+
+      HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor(logger::debug);
+      interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+
+       OkHttpClient httpClient = new OkHttpClient.Builder()
+        .addInterceptor(interceptor)
+        .build();
+
+      this.client = new HoneycombOkHTTPClient<>(
+        httpClient, new JsonFactory(), writeKey, dataSet, defaultEncodeFunction);
     }
 
     @Override
