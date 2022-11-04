@@ -2,10 +2,10 @@ import sbt.Keys.libraryDependencies
 
 ThisBuild / organization := "com.tersesystems.showcase"
 ThisBuild / version := "1.0-SNAPSHOT"
-ThisBuild / scalaVersion := "2.13.8"
-ThisBuild / resolvers += Resolver.mavenLocal
+ThisBuild / scalaVersion := "2.13.10"
+//ThisBuild / resolvers += Resolver.mavenLocal
 
-val terseLogback = "1.1.1-SNAPSHOT"
+val terseLogback = "1.1.1"
 
 lazy val logging = (project in file("modules/logging")).settings(
   

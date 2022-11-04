@@ -46,7 +46,6 @@ public class LogEntryFinder {
     Connection getConnection() throws SQLException {
         SQLiteConfig config = new SQLiteConfig();
         config.setReadOnly(true);
-        config.setJournalMode(SQLiteConfig.JournalMode.WAL);
         config.setBusyTimeout(1000);
         Connection conn = config.createConnection(url);
         return conn;
