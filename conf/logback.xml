@@ -54,9 +54,6 @@
     -->
     <conversionRule conversionWord="stack" converterClass="net.logstash.logback.stacktrace.ShortenedThrowableConverter" />
 
-    <newRule pattern="*/budget-rule"
-             actionClass="com.tersesystems.logback.budget.BudgetRuleAction"/>
-
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>${console.threshold}</level>
@@ -65,7 +62,12 @@
         <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
             <!-- limit the number of debug messages going to console -->
             <evaluator class="com.tersesystems.logback.budget.BudgetEvaluator">
-                <budget-rule name="DEBUG" threshold="5" interval="1" timeUnit="seconds"/>
+                <budgetRule>
+                    <name>${budget.level}</name>
+                    <threshold>${budget.threshold}</threshold>
+                    <interval>${budget.interval}</interval>
+                    <timeUnit>${budget.unit}</timeUnit>
+                </budgetRule>
             </evaluator>
             <OnMismatch>DENY</OnMismatch>
             <OnMatch>NEUTRAL</OnMatch>
@@ -124,13 +126,16 @@
     </appender>
 
     <root>
+        <!-- Add unique id and relative nanos to log event (works across appenders) -->
         <appender class="com.tersesystems.logback.uniqueid.UniqueIdComponentAppender">
             <appender class="com.tersesystems.logback.classic.NanoTimeComponentAppender">
+                <!-- async boundary around blocking appenders -->
                 <appender class="net.logstash.logback.appender.LoggingEventAsyncDisruptorAppender">
                     <appender-ref ref="CONSOLE"/>
                     <appender-ref ref="ASYNC_JSONFILE"/>
                     <appender-ref ref="ASYNC_TEXTFILE"/>
                 </appender>
+                <!-- blacklite is async already -->
                 <appender-ref ref="BLACKLITE"/>
             </appender>
         </appender>
