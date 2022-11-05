@@ -23,6 +23,8 @@ lazy val logging = (project in file("modules/logging")).settings(
   // https://tersesystems.github.io/terse-logback/1.1.0/guide/instrumentation/
   libraryDependencies += "com.tersesystems.logback" % "logback-bytebuddy" % terseLogback,
 
+  libraryDependencies += "com.tersesystems.logback" % "logback-budget" % terseLogback,
+
   // https://tersesystems.github.io/terse-logback/1.1.0/guide/typesafeconfig/
   libraryDependencies += "com.tersesystems.logback" % "logback-typesafe-config" % terseLogback,
 

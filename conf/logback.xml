@@ -54,9 +54,21 @@
     -->
     <conversionRule conversionWord="stack" converterClass="net.logstash.logback.stacktrace.ShortenedThrowableConverter" />
 
+    <newRule pattern="*/budget-rule"
+             actionClass="com.tersesystems.logback.budget.BudgetRuleAction"/>
+
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>${console.threshold}</level>
+        </filter>
+
+        <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+            <!-- limit the number of debug messages going to console -->
+            <evaluator class="com.tersesystems.logback.budget.BudgetEvaluator">
+                <budget-rule name="DEBUG" threshold="5" interval="1" timeUnit="seconds"/>
+            </evaluator>
+            <OnMismatch>DENY</OnMismatch>
+            <OnMatch>NEUTRAL</OnMatch>
         </filter>
 
         <encoder>
