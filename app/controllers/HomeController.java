@@ -1,7 +1,12 @@
 package controllers;
 
+import models.Cat;
 import play.mvc.Result;
 import play.mvc.With;
+import services.CatService;
+
+import javax.inject.Inject;
+import java.util.concurrent.CompletionStage;
 
 /**
  * This controller contains an action to handle HTTP requests
@@ -9,39 +14,22 @@ import play.mvc.With;
  */
 public class HomeController extends AbstractController {
 
+    private final CatService catService;
+
+    @Inject
+    public HomeController(CatService catService) {
+        this.catService = catService;
+    }
+
     public Result index() {
         return ok(views.html.index.render());
     }
 
     @With(ContextAction.class)
-    public Result normal() {
+    public CompletionStage<Result> show() {
         if (logger.isDebugEnabled()) {
             logger.debug("About to render /: this is a normal request...");
         }
-        long timeMillis = -System.currentTimeMillis();
-        if (logger.isTraceEnabled()) {
-            logger.trace("Surely this is less than zero: timeMillis = " + timeMillis);
-        }
-        if (timeMillis > 0) {
-            throw new IllegalStateException("Who could have foreseen this?");
-        }
-        return ok(views.html.index.render());
+        return catService.getCat().thenApply(cat -> ok(views.html.show.render(cat)));
     }
-
-    @With(ContextAction.class)
-    public Result flaky() {
-        if (logger.isDebugEnabled()) {
-            logger.debug("About to render /flaky: this is a flaky request that throws an exception!");
-        }
-        long timeMillis = System.currentTimeMillis();
-        if (logger.isTraceEnabled()) {
-            logger.trace("Surely this is less than zero: timeMillis = " + timeMillis);
-        }
-        if (timeMillis > 0) {
-            throw new IllegalStateException("Who could have foreseen this?");
-        }
-
-        return ok(views.html.index.render());
-    }
-
 }

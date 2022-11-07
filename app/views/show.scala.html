@@ -1,0 +1,21 @@
+@(cat: Cat)
+
+@main("Terse Logback Showcase") {
+<h4><a href="@routes.HomeController.index()">Home</a> | <a href="@routes.LogController.list(1)">Logs</a></h4>
+
+<p>
+    <img src="https://cataas.com/@{cat.url}"/>
+</p>
+
+<p>
+    @for(tag <- cat.tags){
+      @tag
+    }
+</p>
+
+
+<p>
+    The source code for this application is available on <a href="https://github.com/tersesystems/terse-logback-showcase">Github</a>, and uses <a href="https://playframework.com">Play</a> and <a href="https://github.com/tersesystems/terse-logback">Terse Logback</a>.
+</p>
+
+}

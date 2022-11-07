@@ -2,7 +2,7 @@
 
 @(e: _root_.logging.LogEntry, maybeHoneycomb: Option[String])
 
-@main(e.uniqueId) {
+@log.main(e.uniqueId) {
 <h1>@e.uniqueId</h1>
 
 @maybeHoneycomb.map{ link => Honeycomb Trace is @Html(link) }

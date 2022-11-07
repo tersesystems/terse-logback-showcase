@@ -1,7 +1,6 @@
 GET     /                           controllers.HomeController.index()
 
-GET     /normal                     controllers.HomeController.normal()
-GET     /flaky                      controllers.HomeController.flaky()
+GET     /show                     controllers.HomeController.show()
 
 GET     /log                       controllers.LogController.list(page: Int ?= 1)
 GET     /log/:id                   controllers.LogController.show(id: String)
