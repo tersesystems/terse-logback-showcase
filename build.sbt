@@ -20,6 +20,21 @@ lazy val logging = (project in file("modules/logging")).settings(
 
 lazy val root = (project in file(".")).enablePlugins(PlayJava, JavaAgent).settings(
   name := "terse-logback-showcase",
+
+  // Set up for running "sbt docker:publishLocal"
+  dockerExposedPorts := Seq(80),
+  dockerBaseImage := "ibm-semeru-runtimes:open-17-jre-focal",
+  dockerChmodType := com.typesafe.sbt.packager.docker.DockerChmodType.UserGroupWriteExecute,
+  Universal / javaOptions ++= Seq(
+    "-J-XX:MaxRAM=70m",
+    "-J--add-opens=java.base/java.lang=ALL-UNNAMED",
+    "-J--add-opens=java.base/sun.security.ssl=ALL-UNNAMED",
+    "-J--add-opens=java.base/sun.security.util=ALL-UNNAMED",
+    "-Dpidfile.path=/dev/null",
+    "-Dplay.filters.hosts.allowed.0=.fly.dev",
+    "-Dplay.http.secret.key=$PLAY_APP_SECRET"
+  ),
+
   libraryDependencies += ws, // used for calling cat service
 
   libraryDependencies += "org.codehaus.janino" % "janino" % "3.1.8",

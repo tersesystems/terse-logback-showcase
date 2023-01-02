@@ -4,13 +4,7 @@ This is an example project to show how to integrate logging in an application us
 
 It is a [Play application](https://www.playframework.com/documentation/2.8.x/JavaHome) written using Play's Java API.
 
-## Heroku
-
-There is a running demo on [https://terse-logback-showcase.herokuapp.com/](https://terse-logback-showcase.herokuapp.com).  It is loaded on demand, so it may take a while to start up the first time you hit the application.
-
-You can also deploy your own application if you have a Heroku account:
-
-[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
+There is an example application running at https://terse-logback-showcase.fly.dev/ which has pictures of cats.
 
 ## Running
 
@@ -155,3 +149,31 @@ Backtraces are sent by querying the `LogEntryFinder` for log entries matching th
 The `HoneycombHandler` uses the [event API](https://docs.honeycomb.io/api/events/) through [terse-logback honeycomb client](https://tersesystems.com/blog/2019/08/22/tracing-with-logback-and-honeycomb/).  
 
 All errors are sent in as traces to Honeycomb using [manual tracing](https://docs.honeycomb.io/working-with-your-data/tracing/send-trace-data/#manual-tracing), with the error as the root span.  Backtraces are sent by sending [span events](https://docs.honeycomb.io/working-with-your-data/tracing/send-trace-data/#span-events), since log entries do not have a duration in themselves.
+
+## Deploying to fly.io
+
+Make sure you have [flyctl](https://fly.io/docs/flyctl/) installed.
+
+The `fly.toml` file is already set up, will need to change `HONEYCOMB_DATASET` and the app name to your instance.  Fly will handle the HTTPS automatically.
+
+Set the secrets in fly.io appropriately.  You can get some random output by running `head -c 32 /dev/urandom | base64`.
+
+```bash
+fly secrets set PLAY_APP_SECRET=<secret>
+fly secrets set SENTRY_DSN=$SENTRY_DSN 
+fly secrets set HONEYCOMB_API_KEY=$HONEYCOMB_API_KEY
+```
+
+To deploy or launch on fly.io:
+
+```bash
+sbt docker:publishLocal
+cd target/docker/stage
+fly launch # or fly deploy if already running
+```
+
+Starting and stopping the machine is a bit odd, because the id is only available from the "Allocations" section on the [monitoring page](https://fly.io/apps/terse-logback-showcase/monitoring), and you still need to include the `--app` flag.
+
+```bash
+fly machine stop 651b3f43 --app terse-logback-showcase
+```
