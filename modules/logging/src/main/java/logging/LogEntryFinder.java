@@ -26,7 +26,7 @@ public class LogEntryFinder {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final String url;
     private final LoggingExecutionContext executionContext;
-    private final int pageSize;
+    public final int pageSize;
 
     private final String queryStatement;
     private final String requestStatement;

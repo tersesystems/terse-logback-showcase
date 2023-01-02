@@ -5,7 +5,8 @@ import logging.LogEntry;
 import logging.LogEntryFinder;
 import play.mvc.Controller;
 import play.mvc.Result;
-import scala.collection.JavaConverters;
+import scala.collection.mutable.Seq;
+import scala.jdk.javaapi.CollectionConverters;
 
 import javax.inject.Inject;
 import java.util.concurrent.CompletionStage;
@@ -35,16 +36,16 @@ public class LogController extends Controller {
 
     public CompletionStage<Result> list(Integer page) {
         int mult = Math.max(page, 1) - 1;
-        Integer offset = 50 * mult;
+        Integer offset = finder.pageSize * mult;
         return finder.list(offset).thenApply(list -> {
-            scala.collection.mutable.Seq<LogEntry> scalaList = JavaConverters.asScala(list);
+            Seq<LogEntry> scalaList = CollectionConverters.asScala(list);
             return ok(views.html.log.list.render(scalaList.toSeq(), scala.Option.empty(),page + 1));
         });
     }
 
     public CompletionStage<Result> request(String requestId, Integer page) {
         return finder.findByRequestId(requestId).thenApply(list -> {
-            scala.collection.mutable.Seq<LogEntry> scalaList = JavaConverters.asScala(list);
+            Seq<LogEntry> scalaList = CollectionConverters.asScala(list);
             return ok(views.html.log.list.render(scalaList.toSeq(), scala.Some.apply(requestId),page + 1));
         });
     }

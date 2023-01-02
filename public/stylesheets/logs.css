@@ -18,7 +18,7 @@ table {
   flex: 1;
   display: grid;
   border-collapse: collapse;
-  /* These are just initial values which are overriden using JavaScript when a column is resized */
+  /* These are just initial values which are overridden using JavaScript when a column is resized */
   grid-template-columns: 
     minmax(150px, 1.67fr)
     minmax(150px, 0.5fr)
