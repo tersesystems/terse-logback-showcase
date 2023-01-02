@@ -21,6 +21,7 @@ import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -41,23 +42,32 @@ public class HoneycombHandler {
     void handle(SpanInfo spanInfo, Duration spanDuration, List<? extends LogEntry> rows, Http.RequestHeader request, UsefulException usefulException) {
         logger.info("handle: calling honeycomb for request {}", ID.get(request));
 
-        HoneycombRequest<JsonNode> spanRequest = createSpanRequest(spanInfo, spanDuration, request, usefulException);
-        final List<HoneycombRequest<JsonNode>> honeycombRequests = Arrays.asList(spanRequest);
-        CompletionStage<List<HoneycombResponse>> f = honeycombClient.postBatch(honeycombRequests);
-        f.whenComplete((responses, e) -> {
-            if (responses != null) {
-                HoneycombResponse response = responses.get(0);
-                if (responses.get(0).isSuccess()) {
-                    logger.info("handle: Successful post to honeycomb of event {}", response);
-                    postBackTraces(rows, spanInfo);
+        try {
+            HoneycombRequest<JsonNode> spanRequest = createSpanRequest(spanInfo, spanDuration, request, usefulException);
+            final List<HoneycombRequest<JsonNode>> honeycombRequests = Arrays.asList(spanRequest);
+            CompletionStage<List<HoneycombResponse>> f = honeycombClient.postBatch(honeycombRequests)
+              .toCompletableFuture()
+              .orTimeout(1, TimeUnit.SECONDS);
+            f.whenComplete((responses, e) -> {
+                if (responses != null) {
+                    HoneycombResponse response = responses.get(0);
+                    if (responses.get(0).isSuccess()) {
+                        logger.info("handle: Successful post to honeycomb of event {}", response);
+                        postBackTraces(rows, spanInfo);
+                    } else {
+                        logger.error("handle: Bad honeycomb response {}", response);
+                    }
                 } else {
-                    logger.error("handle: Bad honeycomb response {}", response);
+                    logger.info("handle: responses = {}", responses);
                 }
-            }
-            if (e != null) {
-                logger.error("Operation failed", e);
-            }
-        });
+                if (e != null) {
+                    logger.error("handle: Operation failed", e);
+                }
+            });
+        } catch (Exception e) {
+            logger.error("handle: Error posting to Honeycomb", e);
+        }
+
     }
 
     // Create a fake span that covers the entire duration of the request / response

@@ -43,7 +43,7 @@ public class Module extends play.inject.Module {
         try {
           // https://docs.honeycomb.io/api/events/#anatomy-of-an-event
           ObjectNode node = om.createObjectNode();
-          JsonNode time = om.readTree(r.getTimestamp().toString());
+          JsonNode time = om.valueToTree(r.getTimestamp());
           node.set("data", r.getEvent());
           node.set("time", time);
           return writer.writeValueAsBytes(node);
