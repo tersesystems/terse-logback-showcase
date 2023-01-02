@@ -23,7 +23,7 @@ lazy val root = (project in file(".")).enablePlugins(PlayJava, JavaAgent).settin
 
   // Set up for running "sbt docker:publishLocal"
   dockerExposedPorts := Seq(80),
-  dockerBaseImage := "ibm-semeru-runtimes:open-17-jre-focal",
+  dockerBaseImage := "ibm-semeru-runtimes:open-17-jre-focal", // fit into 256MB
   dockerChmodType := com.typesafe.sbt.packager.docker.DockerChmodType.UserGroupWriteExecute,
   Universal / javaOptions ++= Seq(
     "-J-XX:MaxRAM=70m",
@@ -31,8 +31,7 @@ lazy val root = (project in file(".")).enablePlugins(PlayJava, JavaAgent).settin
     "-J--add-opens=java.base/sun.security.ssl=ALL-UNNAMED",
     "-J--add-opens=java.base/sun.security.util=ALL-UNNAMED",
     "-Dpidfile.path=/dev/null",
-    "-Dplay.filters.hosts.allowed.0=.fly.dev",
-    "-Dplay.http.secret.key=$PLAY_APP_SECRET"
+    "-Dconfig.resource=application.prod.conf"
   ),
 
   libraryDependencies += ws, // used for calling cat service
