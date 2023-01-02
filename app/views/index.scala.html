@@ -9,7 +9,15 @@
   </p>
 
   <p>
-    Click on <a href="@controllers.routes.HomeController.show">this link</a> to see a picture of a cat.
+    Click on <a href="@controllers.routes.HomeController.show(false)">this link</a> to see a picture of a cat.
+  </p>
+
+  <p>
+    Click on <a href="@controllers.routes.HomeController.show(true)">this link</a> to make the application throw an exception (causing a juicy backtrace) c
+  </p>
+
+  <p>
+    Click on <a href="@routes.LogController.list(1)">this link</a> to see the logs.
   </p>
 
   <p>

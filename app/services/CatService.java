@@ -19,10 +19,13 @@ public class CatService {
     this.ws = wsClient;
   }
 
-  public CompletionStage<Cat> getCat() {
+  public CompletionStage<Cat> getCat(Boolean error) {
     return ws.url("https://cataas.com/cat?json=true").get().thenApply(response -> {
       JsonNode node = response.asJson();
       try {
+        if (error) {
+          throw new IllegalStateException("Throwing a made up exception!");
+        }
         return Cat.parse(node);
       } catch (IOException e) {
         throw new RuntimeException(e);

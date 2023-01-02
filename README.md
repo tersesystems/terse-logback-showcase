@@ -6,7 +6,7 @@ It is a [Play application](https://www.playframework.com/documentation/2.8.x/Jav
 
 There is an example application running at https://terse-logback-showcase.fly.dev/ which has pictures of cats.
 
-## Running
+## Running Locally
 
 You will need [sbt](https://www.scala-sbt.org/) installed to run.
 
@@ -167,9 +167,10 @@ fly secrets set HONEYCOMB_API_KEY=$HONEYCOMB_API_KEY
 To deploy or launch on fly.io:
 
 ```bash
-sbt docker:publishLocal
+sbt clean stage docker:publishLocal
 cd target/docker/stage
-fly launch # or fly deploy if already running
+# fly launch with copied fly.toml if not already running...
+fly deploy --app terse-logback-showcase
 ```
 
 Starting and stopping the machine is a bit odd, because the id is only available from the "Allocations" section on the [monitoring page](https://fly.io/apps/terse-logback-showcase/monitoring), and you still need to include the `--app` flag.

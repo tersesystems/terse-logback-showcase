@@ -11,6 +11,8 @@ import logging.LogEntry;
 import logging.RequestStartTime;
 import net.logstash.logback.marker.LogstashMarker;
 import net.logstash.logback.marker.Markers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import play.libs.Json;
 import play.mvc.Http;
@@ -23,6 +25,8 @@ import java.util.Optional;
 
 @Singleton
 public class Utils {
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final IdGenerator idgen = new RandomUUIDIdGenerator();
     private final SpanMarkerFactory spanMarkerFactory = new SpanMarkerFactory();
@@ -41,6 +45,13 @@ public class Utils {
         this.honeycombEnabled = config.getBoolean("honeycomb.enabled");
         this.sentryEnabled = config.getBoolean("sentry.enabled");
         this.filesEnabled = config.getBoolean("files.enabled");
+
+        logger.info("honeycomb.enabled = {}, sentry.enabled = {}, files.enabled = {}",
+          honeycombEnabled, sentryEnabled, filesEnabled);
+        if (honeycombEnabled) {
+            logger.info("honeycomb.serviceName = {}", serviceName);
+            logger.info("honeycomb.dataSet = {}", dataSet);
+        }
     }
 
     public String generateHoneycombLink(LogEntry entry) {

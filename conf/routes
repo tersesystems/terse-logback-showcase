@@ -1,6 +1,6 @@
 GET     /                           controllers.HomeController.index()
 
-GET     /show                     controllers.HomeController.show()
+GET     /show                     controllers.HomeController.show(error: Boolean ?= false)
 
 GET     /log                       controllers.LogController.list(page: Int ?= 1)
 GET     /log/:id                   controllers.LogController.show(id: String)

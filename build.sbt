@@ -1,4 +1,5 @@
 import sbt.Keys.libraryDependencies
+import com.typesafe.sbt.packager.docker._
 
 ThisBuild / organization := "com.tersesystems.showcase"
 ThisBuild / version := "1.0-SNAPSHOT"
@@ -24,7 +25,7 @@ lazy val root = (project in file(".")).enablePlugins(PlayJava, JavaAgent).settin
   // Set up for running "sbt docker:publishLocal"
   dockerExposedPorts := Seq(80),
   dockerBaseImage := "ibm-semeru-runtimes:open-17-jre-focal", // fit into 256MB
-  dockerChmodType := com.typesafe.sbt.packager.docker.DockerChmodType.UserGroupWriteExecute,
+  dockerChmodType := DockerChmodType.UserGroupWriteExecute,
   Universal / javaOptions ++= Seq(
     "-J-XX:MaxRAM=70m",
     "-J--add-opens=java.base/java.lang=ALL-UNNAMED",

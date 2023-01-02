@@ -26,10 +26,10 @@ public class HomeController extends AbstractController {
     }
 
     @With(ContextAction.class)
-    public CompletionStage<Result> show() {
+    public CompletionStage<Result> show(Boolean error) {
         if (logger.isDebugEnabled()) {
-            logger.debug("About to render /: this is a normal request...");
+            logger.debug("About to render / with error={}", error);
         }
-        return catService.getCat().thenApply(cat -> ok(views.html.show.render(cat)));
+        return catService.getCat(error).thenApply(cat -> ok(views.html.show.render(cat)));
     }
 }

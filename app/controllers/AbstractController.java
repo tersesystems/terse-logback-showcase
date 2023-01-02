@@ -20,7 +20,6 @@ import static logging.Constants.REQUEST_ID;
 public abstract class AbstractController extends Controller {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-
     static class ContextAction extends play.mvc.Action.Simple {
         private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -31,16 +30,17 @@ public abstract class AbstractController extends Controller {
             try {
                 // Always set request id in MDC for every action we want logging on
                 MDC.put(REQUEST_ID, ID.get(request));
-                return delegate.call(request).handle((result, e) -> {
-                    SpanInfo spanInfo = utils.createRootSpan(request);
-                    int status = e == null ? result.status() : 500;
-                    Marker markers = utils.createMarker(spanInfo, request, result.status());
-                    logger.info(markers,
-                            "{} {} returned {}",
-                            request.method(),
-                            request.uri(),
-                            status);
-                    return result;
+                return delegate.call(request).whenComplete((result, e) -> {
+                    if (e != null) {
+                        SpanInfo spanInfo = utils.createRootSpan(request);
+                        int status = result == null ? 500 : result.status();
+                        Marker markers = utils.createMarker(spanInfo, request, status);
+                        logger.info(markers,
+                          "{} {} failed with exception, sending span info",
+                          request.method(),
+                          request.uri());
+                        // whenComplete will return the exception to the HTTP error handler,
+                    }
                 });
             } finally {
                 MDC.clear();

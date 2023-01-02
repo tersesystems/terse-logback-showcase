@@ -1,1 +1,0 @@
-web: target/universal/stage/bin/terse-logback-showcase -Dhttp.port=${PORT} -Dconfig.resource=${PLAY_CONF_FILE}
