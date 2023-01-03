@@ -1,7 +1,6 @@
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.tersesystems.logback.honeycomb.client.HoneycombClient;
@@ -13,9 +12,11 @@ import okhttp3.logging.HttpLoggingInterceptor;
 import org.slf4j.Logger;
 import play.Environment;
 import play.inject.Binding;
+import play.libs.Json;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
@@ -34,19 +35,12 @@ public class Module extends play.inject.Module {
 
     @Inject
     public HoneycombProvider(Config config) {
-      ObjectMapper om = new ObjectMapper().findAndRegisterModules();
-      final ObjectWriter writer = om.writer();
-
       String writeKey = config.getString("honeycomb.writeKey");
       String dataSet = config.getString("honeycomb.dataSet");
+      ObjectWriter writer = Json.mapper().writer();
       Function<HoneycombRequest<JsonNode>, byte[]> defaultEncodeFunction = r -> {
         try {
-          // https://docs.honeycomb.io/api/events/#anatomy-of-an-event
-          ObjectNode node = om.createObjectNode();
-          JsonNode time = om.valueToTree(r.getTimestamp());
-          node.set("data", r.getEvent());
-          node.set("time", time);
-          return writer.writeValueAsBytes(node);
+          return writer.writeValueAsBytes(r.getEvent());
         } catch (JsonProcessingException e) {
           throw new RuntimeException(e);
         }
